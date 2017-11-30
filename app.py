@@ -1,13 +1,192 @@
 #!/usr/local/bin/python3
 
-from flask import Flask
+import os
+import json
+import logging
+import copy
+from os.path import join as pjoin
+from datetime import datetime
+from flask import Flask, request
+from curwmysqladapter import MySQLAdapter, Station
+from utils.UtilStation import get_station_hash_map
+from utils import UtilValidation, UtilTimeseries
+from config import Constants
 
 app = Flask(__name__)
 
+try:
+    root_dir = os.path.dirname(os.path.realpath(__file__))
+    config = json.loads(open(pjoin(root_dir, './config/CONFIG.json')).read())
 
-@app.route('/weatherstation/updateweatherstation')
+    MYSQL_HOST = "localhost"
+    MYSQL_USER = "root"
+    MYSQL_DB = "curw"
+    MYSQL_PASSWORD = ""
+
+    if 'MYSQL_HOST' in config:
+        MYSQL_HOST = config['MYSQL_HOST']
+    if 'MYSQL_USER' in config:
+        MYSQL_USER = config['MYSQL_USER']
+    if 'MYSQL_DB' in config:
+        MYSQL_DB = config['MYSQL_DB']
+    if 'MYSQL_PASSWORD' in config:
+        MYSQL_PASSWORD = config['MYSQL_PASSWORD']
+
+    db_adapter = MySQLAdapter(host=MYSQL_HOST, user=MYSQL_USER, password=MYSQL_PASSWORD, db=MYSQL_DB)
+    STATION_CONFIG = pjoin(root_dir, './config/StationConfig.json')
+    CON_DATA = json.loads(open(STATION_CONFIG).read())
+    stations_map = get_station_hash_map(CON_DATA['stations'])
+
+    # Create common format with None values
+    script_path = os.path.dirname(os.path.realpath(__file__))
+    common_format = json.loads(open(os.path.join(script_path, './config/TimeStep.json')).read())
+    for key in common_format:
+        common_format[key] = None
+
+except Exception as e:
+    print(e)
+
+
+@app.route('/weatherstation/updateweatherstation', methods=['POST'])
 def update_weather_station():
+    content = request.get_json(silent=True)
+    print("Data::", content)
+    station = stations_map.get(content.get('ID'), None)
+    if station is not None:
+        data = content['data']
+        if len(data) < 1:
+            logging.error("Request does not have data")
+            return "Failure", 404
+        timeseries = []
+
+        is_precip_in_mm = True if 'rainMM' in data[0] else False
+        pre_precip_mm = float(data[0]['rainMM']) if is_precip_in_mm else float(data[0]['rainin']) * 25.4
+        for time_step in data:
+            sl_time = datetime.strptime(time_step['dateutc'], Constants.DATE_TIME_FORMAT) + Constants.SL_OFFSET
+            # Mapping Response to common format
+            new_time_step = copy.deepcopy(common_format)
+
+            # -- DateUTC
+            if 'dateutc' in time_step:
+                new_time_step['DateUTC'] = time_step['dateutc']
+            # -- Time
+            new_time_step['Time'] = sl_time.strftime(Constants.DATE_TIME_FORMAT)
+
+            # -- TemperatureC
+            if 'tempc' in time_step:
+                new_time_step['TemperatureC'] = float(time_step['tempc'])
+            # -- TemperatureF
+            if 'tempf' in time_step:
+                new_time_step['TemperatureC'] = (float(time_step['tempf']) - 32) * 5 / 9
+
+            # -- PrecipitationMM
+            new_time_step['PrecipitationMM'] = float(time_step['rainMM']) - pre_precip_mm \
+                if is_precip_in_mm else float(time_step['rainin']) * 25.4 - pre_precip_mm
+            pre_precip_mm = new_time_step['PrecipitationMM']
+
+            timeseries.append(new_time_step)
+
+        save_timeseries(db_adapter, station, timeseries)
+        return "Success"
+    else:
+        return "Failure", 404
+
+
+@app.route('/weatherstation/updateweatherstation.php', methods=['GET'])
+def update_weather_station_single():
+    data = request.args.to_dict()
+    print(data)
     return "Success"
+
+
+def save_timeseries(adapter, station, timeseries):
+    force_insert = True
+    meta_data = {
+        'station': 'Hanwella',
+        'variable': 'Precipitation',
+        'unit': 'mm',
+        'type': 'Observed',
+        'source': 'WeatherStation',
+        'name': 'WUnderground',
+    }
+
+    print('\n**************** STATION **************')
+    print('station:', station['name'], '(%s)' % station['run_name'])
+    #  Check whether station exists
+    is_station_exists = adapter.get_station({'name': station['name']})
+    if is_station_exists is None:
+        logging.warning('Station %s does not exists.', station['name'])
+        if 'station_meta' in station:
+            station_meta = station['station_meta']
+            station_meta.insert(0, Station.CUrW)
+            row_count = adapter.create_station(station_meta)
+            if row_count > 0:
+                logging.warning('Created new station %s', station_meta)
+            else:
+                logging.error("Unable to create station %s", station_meta)
+                return
+        else:
+            logging.error("Could not find station meta data to create new ", station['name'])
+            return
+
+    if len(timeseries) < 1:
+        logging.error('INFO: Timeseries does not have any data : %s', timeseries)
+        return
+
+    print('Start Date :', timeseries[0]['Time'])
+    print('End Date :', timeseries[-1]['Time'])
+    start_date_time = datetime.strptime(timeseries[0]['Time'], '%Y-%m-%d %H:%M:%S')
+    end_date_time = datetime.strptime(timeseries[-1]['Time'], '%Y-%m-%d %H:%M:%S')
+
+    meta = copy.deepcopy(meta_data)
+    meta['station'] = station['name']
+    meta['start_date'] = start_date_time.strftime("%Y-%m-%d %H:%M:%S")
+    meta['end_date'] = end_date_time.strftime("%Y-%m-%d %H:%M:%S")
+
+    variables = station['variables']
+    units = station['units']
+    if 'run_name' in station:
+        meta['name'] = station['run_name']
+    for i in range(0, len(variables)):
+        extracted_timeseries = UtilTimeseries.extract_single_variable_timeseries(timeseries, variables[i])
+        if len(extracted_timeseries) < 1:
+            logging.warning('Timeseries of variable:%s does not have data. Skip ...', variables[i])
+            continue
+
+        meta['variable'] = variables[i]
+        meta['unit'] = units[i]
+        event_id = adapter.get_event_id(meta)
+        if event_id is None:
+            event_id = adapter.create_event_id(meta)
+            print('HASH SHA256 created: ', event_id)
+        else:
+            print('HASH SHA256 exists: ', event_id)
+            meta_query = copy.deepcopy(meta_data)
+            meta_query['station'] = station['name']
+            meta_query['variable'] = variables[i]
+            meta_query['unit'] = units[i]
+            if 'run_name' in station:
+                meta_query['name'] = station['run_name']
+            query_opts = {
+                'from': start_date_time.strftime("%Y-%m-%d %H:%M:%S"),
+                'to': end_date_time.strftime("%Y-%m-%d %H:%M:%S")
+            }
+            existing_timeseries = adapter.retrieve_timeseries(meta_query, query_opts)
+            if len(existing_timeseries[0]['timeseries']) > 0 and not force_insert:
+                print('Timeseries already exists. Use force insert to insert data.\n')
+                continue
+
+        validation_obj = {
+            'max_value': station['max_values'][i],
+            'min_value': station['min_values'][i],
+        }
+        extracted_timeseries = UtilValidation.handle_duplicate_values(extracted_timeseries, validation_obj)
+
+        for l in extracted_timeseries[:3] + extracted_timeseries[-2:]:
+            print(l)
+
+        row_count = adapter.insert_timeseries(event_id, extracted_timeseries, force_insert)
+        print('%s rows inserted.\n' % row_count)
 
 
 @app.route('/')
