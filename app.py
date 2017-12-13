@@ -33,9 +33,15 @@ try:
         MYSQL_PASSWORD = config['MYSQL_PASSWORD']
 
     db_adapter = MySQLAdapter(host=MYSQL_HOST, user=MYSQL_USER, password=MYSQL_PASSWORD, db=MYSQL_DB)
+    # Get Station Data for Bulk Data Format
     STATION_CONFIG = pjoin(root_dir, './config/StationConfig.json')
     CON_DATA = json.loads(open(STATION_CONFIG).read())
     stations_map = get_station_hash_map(CON_DATA['stations'])
+
+    # Get Station Data for Single Upload Chinese weather stations
+    STATION_CONFIG_WU = pjoin(root_dir, './config/StationConfigWU.json')
+    CON_WU_DATA = json.loads(open(STATION_CONFIG_WU).read())
+    wu_stations_map = get_station_hash_map(CON_WU_DATA['stations'])
 
     # Create common format with None values
     script_path = os.path.dirname(os.path.realpath(__file__))
@@ -95,8 +101,36 @@ def update_weather_station():
 @app.route('/weatherstation/updateweatherstation.php', methods=['GET'])
 def update_weather_station_single():
     data = request.args.to_dict()
-    print(data)
-    return "Success"
+    print("Data::", data)
+    station = wu_stations_map.get(data.get('ID'), None)
+    if station is not None:
+        sl_time = datetime.strptime(data['dateutc'], Constants.DATE_TIME_FORMAT) + Constants.SL_OFFSET
+        # Mapping Response to common format
+        new_time_step = copy.deepcopy(common_format)
+
+        is_precip_in_mm = True if 'rainMM' in data else False
+
+        # -- DateUTC
+        if 'dateutc' in data:
+            new_time_step['DateUTC'] = data['dateutc']
+        # -- Time
+        new_time_step['Time'] = sl_time.strftime(Constants.DATE_TIME_FORMAT)
+
+        # -- TemperatureC
+        if 'tempc' in data:
+            new_time_step['TemperatureC'] = float(data['tempc'])
+        # -- TemperatureF
+        if 'tempf' in data:
+            new_time_step['TemperatureC'] = (float(data['tempf']) - 32) * 5 / 9
+
+        # -- PrecipitationMM
+        new_time_step['PrecipitationMM'] = float(data['rainMM']) \
+            if is_precip_in_mm else float(data['rainin']) * 25.4
+
+        save_timeseries(db_adapter, station, [new_time_step])
+        return "Success"
+    else:
+        return "Failure", 404
 
 
 def save_timeseries(adapter, station, timeseries):

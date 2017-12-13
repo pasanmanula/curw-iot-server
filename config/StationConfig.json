@@ -1,6 +1,6 @@
 {
     "stations" : [
-      {
+        {
             "stationId": "curw_mahapallegama",
             "name": "Mahapallegama",
             "station_meta": ["curw_mahapallegama", "Mahapallegama", 7.169737, 80.258512, 0, "Mahapallegama station with standard Gauge"],

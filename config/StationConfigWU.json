@@ -1,0 +1,17 @@
+{
+    "stations" : [
+      {
+            "stationId": "curw_orugodawatta",
+            "name": "Orugodawatta",
+            "station_meta": ["curw_orugodawatta", "Orugodawatta", 6.943741, 79.87887, 0, "SLLRDC Colombo North Office"],
+            "source": "WeatherStation",
+            "type": "Observed",
+            "variables": ["Precipitation", "Temperature"],
+            "units": ["mm", "oC"],
+            "max_values": ["120", "40"],
+            "min_values": ["0", "0"],
+            "description": "SLLRDC Colombo North Office",
+            "run_name": "CUrW IoT"
+      }
+    ]
+}
