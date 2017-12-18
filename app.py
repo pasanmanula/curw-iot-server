@@ -4,6 +4,7 @@ import os
 import json
 import logging
 import copy
+from logging.config import dictConfig
 from os.path import join as pjoin
 from datetime import datetime
 from flask import Flask, request
@@ -17,6 +18,12 @@ app = Flask(__name__)
 try:
     root_dir = os.path.dirname(os.path.realpath(__file__))
     config = json.loads(open(pjoin(root_dir, './config/CONFIG.json')).read())
+
+    # Initialize Logger
+    logging_config = json.loads(open(pjoin(root_dir, './config/LOGGING_CONFIG.json')).read())
+    dictConfig(logging_config)
+    logger = logging.getLogger('IoTServer')
+    logger.addHandler(logging.StreamHandler())
 
     MYSQL_HOST = "localhost"
     MYSQL_USER = "root"
@@ -57,18 +64,18 @@ except Exception as e:
 def update_weather_station():
     try:
         content = request.get_json(silent=True)
-        logging.info("Data::", content)
+        logger.info("Data:: %s", content)
         if not isinstance(content, object) and not content:
             raise Exception("Request ")
     except Exception as json_error:
-        logging.error(json_error)
+        logger.error(json_error)
         return "Bad Request", 400
 
     station = stations_map.get(content.get('ID'), None)
     if station is not None:
         data = content['data']
         if len(data) < 1:
-            logging.error("Request does not have data")
+            logger.error("Request does not have data")
             return "Failure", 404
         timeseries = []
 
@@ -108,7 +115,7 @@ def update_weather_station():
 @app.route('/weatherstation/updateweatherstation.php', methods=['GET'])
 def update_weather_station_single():
     data = request.args.to_dict()
-    logging.info("Data::", data)
+    logger.info("Data:: %s", data)
     station = wu_stations_map.get(data.get('ID'), None)
     if station is not None:
         sl_time = datetime.strptime(data['dateutc'], Constants.DATE_TIME_FORMAT) + Constants.SL_OFFSET
@@ -151,31 +158,31 @@ def save_timeseries(adapter, station, timeseries):
         'name': 'WUnderground',
     }
 
-    logging.info('\n**************** STATION **************')
-    logging.info('station:', station['name'], '(%s)' % station['run_name'])
+    logger.info('\n**************** STATION **************')
+    logger.info('station name: %s, run_name: %s', station['name'], station['run_name'])
     #  Check whether station exists
     is_station_exists = adapter.get_station({'name': station['name']})
     if is_station_exists is None:
-        logging.warning('Station %s does not exists.', station['name'])
+        logger.warning('Station %s does not exists.', station['name'])
         if 'station_meta' in station:
             station_meta = station['station_meta']
             station_meta.insert(0, Station.CUrW)
             row_count = adapter.create_station(station_meta)
             if row_count > 0:
-                logging.warning('Created new station %s', station_meta)
+                logger.warning('Created new station %s', station_meta)
             else:
-                logging.error("Unable to create station %s", station_meta)
+                logger.error("Unable to create station %s", station_meta)
                 return
         else:
-            logging.error("Could not find station meta data to create new ", station['name'])
+            logger.error("Could not find station meta data to create new ", station['name'])
             return
 
     if len(timeseries) < 1:
-        logging.error('INFO: Timeseries does not have any data : %s', timeseries)
+        logger.error('INFO: Timeseries does not have any data : %s', timeseries)
         return
 
-    logging.info('Start Date :', timeseries[0]['Time'])
-    logging.info('End Date :', timeseries[-1]['Time'])
+    logger.info('Start Date : %s', timeseries[0]['Time'])
+    logger.info('End Date : %s', timeseries[-1]['Time'])
     start_date_time = datetime.strptime(timeseries[0]['Time'], '%Y-%m-%d %H:%M:%S')
     end_date_time = datetime.strptime(timeseries[-1]['Time'], '%Y-%m-%d %H:%M:%S')
 
@@ -191,7 +198,7 @@ def save_timeseries(adapter, station, timeseries):
     for i in range(0, len(variables)):
         extracted_timeseries = UtilTimeseries.extract_single_variable_timeseries(timeseries, variables[i])
         if len(extracted_timeseries) < 1:
-            logging.warning('Timeseries of variable:%s does not have data. Skip ...', variables[i])
+            logger.warning('Timeseries of variable:%s does not have data. Skip ...', variables[i])
             continue
 
         meta['variable'] = variables[i]
@@ -199,9 +206,9 @@ def save_timeseries(adapter, station, timeseries):
         event_id = adapter.get_event_id(meta)
         if event_id is None:
             event_id = adapter.create_event_id(meta)
-            logging.info('HASH SHA256 created: ', event_id)
+            logger.info('HASH SHA256 created: %s', event_id)
         else:
-            logging.info('HASH SHA256 exists: ', event_id)
+            logger.info('HASH SHA256 exists: %s', event_id)
             meta_query = copy.deepcopy(meta_data)
             meta_query['station'] = station['name']
             meta_query['variable'] = variables[i]
@@ -214,7 +221,7 @@ def save_timeseries(adapter, station, timeseries):
             }
             existing_timeseries = adapter.retrieve_timeseries(meta_query, query_opts)
             if len(existing_timeseries[0]['timeseries']) > 0 and not force_insert:
-                logging.warning('Timeseries already exists. Use force insert to insert data.\n')
+                logger.warning('Timeseries already exists. Use force insert to insert data.\n')
                 continue
 
         validation_obj = {
@@ -224,10 +231,10 @@ def save_timeseries(adapter, station, timeseries):
         extracted_timeseries = UtilValidation.handle_duplicate_values(extracted_timeseries, validation_obj)
 
         for l in extracted_timeseries[:3] + extracted_timeseries[-2:]:
-            logging.debug(l)
+            logger.debug(l)
 
         row_count = adapter.insert_timeseries(event_id, extracted_timeseries, force_insert)
-        logging.info('%s rows inserted.\n' % row_count)
+        logger.info('%s rows inserted.\n' % row_count)
 
 
 @app.route('/')
