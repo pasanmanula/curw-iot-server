@@ -50,13 +50,20 @@ try:
         common_format[key] = None
 
 except Exception as e:
-    print(e)
+    logging.error(e)
 
 
 @app.route('/weatherstation/updateweatherstation', methods=['POST'])
 def update_weather_station():
-    content = request.get_json(silent=True)
-    print("Data::", content)
+    try:
+        content = request.get_json(silent=True)
+        logging.info("Data::", content)
+        if not isinstance(content, object) and not content:
+            raise Exception("Request ")
+    except Exception as json_error:
+        logging.error(json_error)
+        return "Bad Request", 400
+
     station = stations_map.get(content.get('ID'), None)
     if station is not None:
         data = content['data']
@@ -101,7 +108,7 @@ def update_weather_station():
 @app.route('/weatherstation/updateweatherstation.php', methods=['GET'])
 def update_weather_station_single():
     data = request.args.to_dict()
-    print("Data::", data)
+    logging.info("Data::", data)
     station = wu_stations_map.get(data.get('ID'), None)
     if station is not None:
         sl_time = datetime.strptime(data['dateutc'], Constants.DATE_TIME_FORMAT) + Constants.SL_OFFSET
@@ -144,8 +151,8 @@ def save_timeseries(adapter, station, timeseries):
         'name': 'WUnderground',
     }
 
-    print('\n**************** STATION **************')
-    print('station:', station['name'], '(%s)' % station['run_name'])
+    logging.info('\n**************** STATION **************')
+    logging.info('station:', station['name'], '(%s)' % station['run_name'])
     #  Check whether station exists
     is_station_exists = adapter.get_station({'name': station['name']})
     if is_station_exists is None:
@@ -167,8 +174,8 @@ def save_timeseries(adapter, station, timeseries):
         logging.error('INFO: Timeseries does not have any data : %s', timeseries)
         return
 
-    print('Start Date :', timeseries[0]['Time'])
-    print('End Date :', timeseries[-1]['Time'])
+    logging.info('Start Date :', timeseries[0]['Time'])
+    logging.info('End Date :', timeseries[-1]['Time'])
     start_date_time = datetime.strptime(timeseries[0]['Time'], '%Y-%m-%d %H:%M:%S')
     end_date_time = datetime.strptime(timeseries[-1]['Time'], '%Y-%m-%d %H:%M:%S')
 
@@ -192,9 +199,9 @@ def save_timeseries(adapter, station, timeseries):
         event_id = adapter.get_event_id(meta)
         if event_id is None:
             event_id = adapter.create_event_id(meta)
-            print('HASH SHA256 created: ', event_id)
+            logging.info('HASH SHA256 created: ', event_id)
         else:
-            print('HASH SHA256 exists: ', event_id)
+            logging.info('HASH SHA256 exists: ', event_id)
             meta_query = copy.deepcopy(meta_data)
             meta_query['station'] = station['name']
             meta_query['variable'] = variables[i]
@@ -207,7 +214,7 @@ def save_timeseries(adapter, station, timeseries):
             }
             existing_timeseries = adapter.retrieve_timeseries(meta_query, query_opts)
             if len(existing_timeseries[0]['timeseries']) > 0 and not force_insert:
-                print('Timeseries already exists. Use force insert to insert data.\n')
+                logging.warning('Timeseries already exists. Use force insert to insert data.\n')
                 continue
 
         validation_obj = {
@@ -217,15 +224,15 @@ def save_timeseries(adapter, station, timeseries):
         extracted_timeseries = UtilValidation.handle_duplicate_values(extracted_timeseries, validation_obj)
 
         for l in extracted_timeseries[:3] + extracted_timeseries[-2:]:
-            print(l)
+            logging.debug(l)
 
         row_count = adapter.insert_timeseries(event_id, extracted_timeseries, force_insert)
-        print('%s rows inserted.\n' % row_count)
+        logging.info('%s rows inserted.\n' % row_count)
 
 
 @app.route('/')
 def index():
-    return "Hello, World!"
+    return "Welcome to CUrW !"
 
 
 if __name__ == '__main__':
