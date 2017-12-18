@@ -64,8 +64,8 @@ except Exception as e:
 def update_weather_station():
     try:
         content = request.get_json(silent=True)
-        logger.info("Data:: %s", content)
-        if not isinstance(content, object) and not content:
+        logger.info("Data (Bulk):: %s", content)
+        if not isinstance(content, object) and not content and 'ID' in content:
             raise Exception("Invalid request. Abort ...")
     except Exception as json_error:
         logger.error(json_error)
@@ -109,7 +109,7 @@ def update_weather_station():
         save_timeseries(db_adapter, station, timeseries)
         return "Success"
     else:
-        logger.warning("Unknown Station: %s", station)
+        logger.warning("Unknown Station: %s", content.get('ID'))
         return "Failure", 404
 
 
@@ -117,8 +117,8 @@ def update_weather_station():
 def update_weather_station_single():
     try:
         data = request.args.to_dict()
-        logger.info("Data:: %s", data)
-        if not isinstance(data, dict) and not data:
+        logger.info("Data (Single):: %s", data)
+        if not isinstance(data, dict) and not data and 'ID' in data:
             raise Exception("Invalid request. Abort ...")
     except Exception as json_error:
         logger.error(json_error)
@@ -152,7 +152,7 @@ def update_weather_station_single():
         save_timeseries(db_adapter, station, [new_time_step])
         return "Success"
     else:
-        logger.warning("Unknown Station: %s", station)
+        logger.warning("Unknown Station: %s", data.get('ID'))
         return "Failure", 404
 
 
