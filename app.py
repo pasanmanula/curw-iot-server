@@ -66,7 +66,7 @@ def update_weather_station():
         content = request.get_json(silent=True)
         logger.info("Data:: %s", content)
         if not isinstance(content, object) and not content:
-            raise Exception("Request ")
+            raise Exception("Invalid request. Abort ...")
     except Exception as json_error:
         logger.error(json_error)
         return "Bad Request", 400
@@ -109,13 +109,21 @@ def update_weather_station():
         save_timeseries(db_adapter, station, timeseries)
         return "Success"
     else:
+        logger.warning("Unknown Station: %s", station)
         return "Failure", 404
 
 
 @app.route('/weatherstation/updateweatherstation.php', methods=['GET'])
 def update_weather_station_single():
-    data = request.args.to_dict()
-    logger.info("Data:: %s", data)
+    try:
+        data = request.args.to_dict()
+        logger.info("Data:: %s", data)
+        if not isinstance(data, dict) and not data:
+            raise Exception("Invalid request. Abort ...")
+    except Exception as json_error:
+        logger.error(json_error)
+        return "Bad Request", 400
+
     station = wu_stations_map.get(data.get('ID'), None)
     if station is not None:
         sl_time = datetime.strptime(data['dateutc'], Constants.DATE_TIME_FORMAT) + Constants.SL_OFFSET
@@ -144,6 +152,7 @@ def update_weather_station_single():
         save_timeseries(db_adapter, station, [new_time_step])
         return "Success"
     else:
+        logger.warning("Unknown Station: %s", station)
         return "Failure", 404
 
 
