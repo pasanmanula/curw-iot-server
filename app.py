@@ -80,7 +80,6 @@ def update_weather_station():
         timeseries = []
 
         is_precip_in_mm = True if 'rainMM' in data[0] else False
-        pre_precip_mm = float(data[0]['rainMM']) if is_precip_in_mm else float(data[0]['rainin']) * 25.4
         for time_step in data:
             sl_time = datetime.strptime(time_step['dateutc'], Constants.DATE_TIME_FORMAT) + Constants.SL_OFFSET
             # Mapping Response to common format
@@ -100,9 +99,8 @@ def update_weather_station():
                 new_time_step['TemperatureC'] = (float(time_step['tempf']) - 32) * 5 / 9
 
             # -- PrecipitationMM
-            new_time_step['PrecipitationMM'] = float(time_step['rainMM']) - pre_precip_mm \
-                if is_precip_in_mm else float(time_step['rainin']) * 25.4 - pre_precip_mm
-            pre_precip_mm = new_time_step['PrecipitationMM']
+            new_time_step['PrecipitationMM'] = float(time_step['rainMM']) \
+                if is_precip_in_mm else float(time_step['rainin']) * 25.4
 
             timeseries.append(new_time_step)
 
