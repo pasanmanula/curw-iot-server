@@ -22,8 +22,9 @@ try:
     # Initialize Logger
     logging_config = json.loads(open(pjoin(root_dir, './config/LOGGING_CONFIG.json')).read())
     dictConfig(logging_config)
-    logger = logging.getLogger('IoTServer')
-    logger.addHandler(logging.StreamHandler())
+    logger_single = logging.getLogger('single')
+    logger_bulk = logging.getLogger('bulk')
+    # logger.addHandler(logging.StreamHandler())
 
     MYSQL_HOST = "localhost"
     MYSQL_USER = "root"
@@ -64,18 +65,18 @@ except Exception as e:
 def update_weather_station():
     try:
         content = request.get_json(silent=True)
-        logger.info("Data (Bulk):: %s", content)
+        logger_bulk.info("Data (Bulk):: %s", content)
         if not isinstance(content, object) and not content and 'ID' in content:
             raise Exception("Invalid request. Abort ...")
     except Exception as json_error:
-        logger.error(json_error)
+        logger_bulk.error(json_error)
         return "Bad Request", 400
 
     station = stations_map.get(content.get('ID'), None)
     if station is not None:
         data = content['data']
         if len(data) < 1:
-            logger.error("Request does not have data")
+            logger_bulk.error("Request does not have data")
             return "Failure", 404
         timeseries = []
 
@@ -104,10 +105,10 @@ def update_weather_station():
 
             timeseries.append(new_time_step)
 
-        save_timeseries(db_adapter, station, timeseries)
+        save_timeseries(db_adapter, station, timeseries, logger_bulk)
         return "Success"
     else:
-        logger.warning("Unknown Station: %s", content.get('ID'))
+        logger_bulk.warning("Unknown Station: %s", content.get('ID'))
         return "Failure", 404
 
 
@@ -115,11 +116,11 @@ def update_weather_station():
 def update_weather_station_single():
     try:
         data = request.args.to_dict()
-        logger.info("Data (Single):: %s", data)
+        logger_single.info("Data (Single):: %s", data)
         if not isinstance(data, dict) and not data and 'ID' in data:
             raise Exception("Invalid request. Abort ...")
     except Exception as json_error:
-        logger.error(json_error)
+        logger_single.error(json_error)
         return "Bad Request", 400
 
     station = wu_stations_map.get(data.get('ID'), None)
@@ -127,8 +128,6 @@ def update_weather_station_single():
         sl_time = datetime.strptime(data['dateutc'], Constants.DATE_TIME_FORMAT) + Constants.SL_OFFSET
         # Mapping Response to common format
         new_time_step = copy.deepcopy(common_format)
-
-        is_precip_in_mm = True if 'rainMM' in data else False
 
         # -- DateUTC
         if 'dateutc' in data:
@@ -144,17 +143,27 @@ def update_weather_station_single():
             new_time_step['TemperatureC'] = (float(data['tempf']) - 32) * 5 / 9
 
         # -- PrecipitationMM
-        new_time_step['PrecipitationMM'] = float(data['rainMM']) \
-            if is_precip_in_mm else float(data['rainin']) * 25.4
+        if 'rainMM' in data:
+            new_time_step['PrecipitationMM'] = float(data['rainMM'])
+        # -- PrecipitationIn
+        if 'rainin' in data:
+            new_time_step['PrecipitationMM'] = float(data['rainin']) * 25.4
 
-        save_timeseries(db_adapter, station, [new_time_step])
+        # -- WindSpeedKMH
+        if 'windspeedkmh' in data:
+            new_time_step['WindSpeedM/S'] = float(data['windspeedkmh']) / 3.6
+        # -- WindSpeedMPH
+        if 'windspeedmph' in data:
+            new_time_step['WindSpeedM/S'] = float(data['windspeedmph']) * 1.609344 / 3.6
+
+        save_timeseries(db_adapter, station, [new_time_step], logger_single)
         return "Success"
     else:
-        logger.warning("Unknown Station: %s", data.get('ID'))
+        logger_single.warning("Unknown Station: %s", data.get('ID'))
         return "Failure", 404
 
 
-def save_timeseries(adapter, station, timeseries):
+def save_timeseries(adapter, station, timeseries, logger):
     force_insert = True
     meta_data = {
         'station': 'Hanwella',
