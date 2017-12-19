@@ -61,6 +61,9 @@ except Exception as e:
     logging.error(e)
 
 
+#####################################################################
+#                    BULK DATA                                      #
+#####################################################################
 @app.route('/weatherstation/updateweatherstation', methods=['POST'])
 def update_weather_station():
     try:
@@ -112,6 +115,9 @@ def update_weather_station():
         return "Failure", 404
 
 
+#####################################################################
+#                    SINGLE DATA                                    #
+#####################################################################
 @app.route('/weatherstation/updateweatherstation.php', methods=['GET'])
 def update_weather_station_single():
     try:
@@ -155,6 +161,23 @@ def update_weather_station_single():
         # -- WindSpeedMPH
         if 'windspeedmph' in data:
             new_time_step['WindSpeedM/S'] = float(data['windspeedmph']) * 1.609344 / 3.6
+        # -- WindGustKMH
+        if 'windgustkmh' in data:
+            new_time_step['WindGustM/S'] = float(data['windgustkmh']) / 3.6
+        # -- WindGustMPH
+        if 'windgustmph' in data:
+            new_time_step['WindGustM/S'] = float(data['windgustmph']) * 1.609344 / 3.6
+        # -- WindDirection
+        if 'winddir' in data:
+            new_time_step['WindDirectionDegrees'] = float(data['winddir'])
+
+        # -- Humidity
+        if 'humidity' in data:
+            new_time_step['Humidity'] = float(data['humidity'])
+
+        # -- SolarRadiation
+        if 'solarradiation' in data:
+            new_time_step['SolarRadiationW/m2'] = float(data['solarradiation'])
 
         save_timeseries(db_adapter, station, [new_time_step], logger_single)
         return "Success"

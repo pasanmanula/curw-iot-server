@@ -18,10 +18,10 @@
             "station_meta": ["curw_jaffna", "Jaffna", 9.6607949, 80.0298459, 0, "District Secretariat Office Jaffna"],
             "source": "WeatherStation",
             "type": "Observed",
-            "variables": ["Precipitation", "Temperature"],
-            "units": ["mm", "oC"],
-            "max_values": ["120", "40"],
-            "min_values": ["0", "0"],
+            "variables": ["Precipitation", "Temperature", "WindSpeed", "WindGust", "WindDirection", "Humidity", "SolarRadiation"],
+            "units": ["mm", "oC", "m/s", "m/s", "degrees", "%", "W/m2"],
+            "max_values": ["120", "40", "30", "30", "360", "100", "1413"],
+            "min_values": ["0", "0", "0", "0", "0", "0", "0"],
             "description": "District Secretariat Office Jaffna",
             "run_name": "CUrW IoT"
         }
