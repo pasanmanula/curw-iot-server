@@ -23,7 +23,8 @@
             "max_values": ["120", "40", "30", "30", "360", "100", "1413"],
             "min_values": ["0", "0", "0", "0", "0", "0", "0"],
             "description": "District Secretariat Office Jaffna",
-            "run_name": "CUrW IoT"
+            "run_name": "CUrW IoT",
+            "wunderground": {"stationId": "IJAFFNAP2", "password": "xjkyw8cn"}
         }
     ]
 }
