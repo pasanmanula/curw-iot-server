@@ -12,4 +12,4 @@ def get_station_hash_map(stations):
 
 def forward_to_weather_underground(data, logger):
     r = requests.get('https://rtupdate.wunderground.com/weatherstation/updateweatherstation.php', params=data)
-    logger.info('WeatherUnderground', r.status_code, r.text)
+    logger.info('WeatherUnderground >> %s, %s', r.status_code, r.text)
