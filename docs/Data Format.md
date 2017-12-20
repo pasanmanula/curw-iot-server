@@ -1,7 +1,7 @@
 ## Bulk Update Data Format
 
-This is adapted from [PWS - Upload Protocol](http://wiki.wunderground.com/index.php/PWS_-_Upload_Protocol#GET_parameters).
-In order to upload data with multiple sampling.
+This protocol is adapted from [PWS - Upload Protocol](http://wiki.wunderground.com/index.php/PWS_-_Upload_Protocol#GET_parameters).
+It is capable of upload data with multiple sampling.
 
 ### URL
 <HOST_IP:PORT>/weatherstation/updateweatherstation
@@ -38,7 +38,8 @@ Content-Type: application/json
         "batt": ""
     },
     "action": "updateraw",
-    "softwaretype": "iCon"
+    "softwaretype": "iCon",
+    "version": "1.3.6"
 }
 ```
 
@@ -47,7 +48,9 @@ Content-Type: application/json
 - ID [ID as registered to CUrW]
 - PASSWORD [Station Key registered with this PWS ID, case sensitive]
 - action [action=updateraw] -- always supply this parameter to indicate you are making a weather observation upload
-- softwaretype - [text] ie: WeatherLink, VWS, WeatherDisplay, iCon
+- softwaretype - [text] ie: WeatherLink, VWS, WeatherDisplay, iCon, Dialog
+- version - [text] ie: 0.4.2, v1.7.2
+- data [JSON Array of Data Objects] - can contain multiple `data` object as described below
 
 #### List of `data` filed object fields
 
@@ -70,3 +73,16 @@ Content-Type: application/json
 - windgustmph_10m - [mph past 10 minutes wind gust mph ]
 - windgustdir_10m - [0-360 past 10 minutes wind gust direction]
 
+### Response
+
+Status Code
+
+```
+200
+```
+
+Response Body
+
+```
+success
+```
