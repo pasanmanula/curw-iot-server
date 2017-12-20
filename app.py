@@ -9,7 +9,7 @@ from os.path import join as pjoin
 from datetime import datetime
 from flask import Flask, request
 from curwmysqladapter import MySQLAdapter, Station
-from utils.UtilStation import get_station_hash_map
+from utils.UtilStation import get_station_hash_map, forward_to_weather_underground
 from utils import UtilValidation, UtilTimeseries
 from config import Constants
 
@@ -180,6 +180,7 @@ def update_weather_station_single():
             new_time_step['SolarRadiationW/m2'] = float(data['solarradiation'])
 
         save_timeseries(db_adapter, station, [new_time_step], logger_single)
+        forward_to_weather_underground(data, logger_single)
         return "Success"
     else:
         logger_single.warning("Unknown Station: %s", data.get('ID'))
