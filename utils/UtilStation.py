@@ -16,5 +16,5 @@ def forward_to_weather_underground(data, logger):
 
 
 def forward_to_dialog_iot(data, logger):
-    r = requests.get('https://h.a.ideabiz.lk/weatherstation/updateweatherstation.php', params=data)
+    r = requests.get('http://h.a.ideabiz.lk/weatherstation/updateweatherstation.php', params=data)
     logger.info('Dialog IoT >> %s, %s', r.status_code, r.text)
