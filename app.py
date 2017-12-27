@@ -9,7 +9,7 @@ from os.path import join as pjoin
 from datetime import datetime
 from flask import Flask, request
 from curwmysqladapter import MySQLAdapter, Station
-from utils.UtilStation import get_station_hash_map, forward_to_weather_underground
+from utils.UtilStation import get_station_hash_map, forward_to_weather_underground, forward_to_dialog_iot
 from utils import UtilValidation, UtilTimeseries
 from config import Constants
 
@@ -181,9 +181,15 @@ def update_weather_station_single():
 
         save_timeseries(db_adapter, station, [new_time_step], logger_single)
         if 'wunderground' in station:
-            data['ID'] = station['wunderground']['stationId']
-            data['PASSWORD'] = station['wunderground']['password']
-            forward_to_weather_underground(data, logger_single)
+            wu_data = copy.deepcopy(data)
+            wu_data['ID'] = station['wunderground']['stationId']
+            wu_data['PASSWORD'] = station['wunderground']['password']
+            forward_to_weather_underground(wu_data, logger_single)
+        if 'dialog' in station:
+            dialog_data = copy.deepcopy(data)
+            dialog_data['ID'] = station['dialog']['stationId']
+            dialog_data['PASSWORD'] = station['dialog']['password']
+            forward_to_dialog_iot(dialog_data, logger_single)
         return "Success"
     else:
         logger_single.warning("Unknown Station: %s", data.get('ID'))

@@ -1,4 +1,4 @@
-from setuptools import setup, find_packages
+from setuptools import setup
 
 
 with open('README.md') as f:
@@ -16,5 +16,5 @@ setup(
     author_email='gckarunarathne@gmail.com',
     url='https://github.com/gihankarunarathne/curw-iot-server',
     license=license_file,
-    packages=find_packages(exclude=('tests', 'docs'))
+    requires=['requests']
 )
