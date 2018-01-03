@@ -12,6 +12,7 @@ from curwmysqladapter import MySQLAdapter, Station
 from utils.UtilStation import get_station_hash_map, forward_to_weather_underground, forward_to_dialog_iot
 from utils import UtilValidation, UtilTimeseries
 from config import Constants
+from route import api
 
 app = Flask(__name__)
 
@@ -24,6 +25,7 @@ try:
     dictConfig(logging_config)
     logger_single = logging.getLogger('single')
     logger_bulk = logging.getLogger('bulk')
+    logger_api = logging.getLogger('api')
     # logger.addHandler(logging.StreamHandler())
 
     MYSQL_HOST = "localhost"
@@ -290,6 +292,8 @@ def save_timeseries(adapter, station, timeseries, logger):
 def index():
     return "Welcome to CUrW !"
 
+
+app.register_blueprint(api.output_api)
 
 if __name__ == '__main__':
     app.run(debug=True)
