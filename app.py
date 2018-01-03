@@ -70,7 +70,7 @@ except Exception as e:
 def update_weather_station():
     try:
         content = request.get_json(silent=True)
-        logger_bulk.info("Data (Bulk):: %s", content)
+        logger_bulk.info("%s", content)
         if not isinstance(content, object) and not content and 'ID' in content:
             raise Exception("Invalid request. Abort ...")
     except Exception as json_error:
@@ -124,7 +124,7 @@ def update_weather_station():
 def update_weather_station_single():
     try:
         data = request.args.to_dict()
-        logger_single.info("Data (Single):: %s", data)
+        logger_single.info("%s", data)
         if not isinstance(data, dict) and not data and 'ID' in data:
             raise Exception("Invalid request. Abort ...")
     except Exception as json_error:
@@ -209,8 +209,8 @@ def save_timeseries(adapter, station, timeseries, logger):
         'name': 'WUnderground',
     }
 
-    logger.info('\n**************** STATION **************')
-    logger.info('station name: %s, run_name: %s', station['name'], station['run_name'])
+    logger.debug('\n**************** STATION **************')
+    logger.debug('station name: %s, run_name: %s', station['name'], station['run_name'])
     #  Check whether station exists
     is_station_exists = adapter.get_station({'name': station['name']})
     if is_station_exists is None:
@@ -232,8 +232,8 @@ def save_timeseries(adapter, station, timeseries, logger):
         logger.error('INFO: Timeseries does not have any data : %s', timeseries)
         return
 
-    logger.info('Start Date : %s', timeseries[0]['Time'])
-    logger.info('End Date : %s', timeseries[-1]['Time'])
+    logger.debug('Start Date : %s', timeseries[0]['Time'])
+    logger.debug('End Date : %s', timeseries[-1]['Time'])
     start_date_time = datetime.strptime(timeseries[0]['Time'], '%Y-%m-%d %H:%M:%S')
     end_date_time = datetime.strptime(timeseries[-1]['Time'], '%Y-%m-%d %H:%M:%S')
 
@@ -257,9 +257,9 @@ def save_timeseries(adapter, station, timeseries, logger):
         event_id = adapter.get_event_id(meta)
         if event_id is None:
             event_id = adapter.create_event_id(meta)
-            logger.info('HASH SHA256 created: %s', event_id)
+            logger.debug('HASH SHA256 created: %s', event_id)
         else:
-            logger.info('HASH SHA256 exists: %s', event_id)
+            logger.debug('HASH SHA256 exists: %s', event_id)
             meta_query = copy.deepcopy(meta_data)
             meta_query['station'] = station['name']
             meta_query['variable'] = variables[i]
@@ -285,7 +285,7 @@ def save_timeseries(adapter, station, timeseries, logger):
             logger.debug(l)
 
         row_count = adapter.insert_timeseries(event_id, extracted_timeseries, force_insert)
-        logger.info('%s rows inserted.\n' % row_count)
+        logger.debug('%s rows inserted.\n' % row_count)
 
 
 @app.route('/')
