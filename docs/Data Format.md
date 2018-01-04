@@ -94,14 +94,14 @@ Response Body
 success
 ```
 
-### Example
+### Examples
 
-##### Example 1
+#### Example 1
 
-Lets assume that 10:00:00 time on a particular day, Rain Gauge measured the Precipitation as 0.2 mm, and 
-the Rain Gauge's tipping  bucket size is 0.2 mm.
-In sub-sequence time steps of 10:02:14, 10:04:10, 10:06:45 and 10:09:00, the Rain Gauge bucket is tipped and the
-Accumulative Precipitation (Rainfall) is show in the following graph.
+Lets assume 10:00:00 time in a particular day, and a Rain Gauge is showing the Accumulative Precipitation value as 0.2 mm. 
+Also consider the Rain Gauge's tipping  bucket size is 0.2 mm.
+In sub-sequence time steps of 10:02:14, 10:04:10, 10:06:45 and 10:09:00, the Rain Gauge's tipping bucket is tipped and the
+Accumulative Precipitation (Rainfall) is shown in the following graph.
 
 ```bash
 Accumulative Precipitation (mm)
@@ -117,8 +117,8 @@ Accumulative Precipitation (mm)
     10:00:00 10:02:14 10:04:10 10:05:00 10:06:45 10:09:00 10:10:00
 ```
 
-Lets say that, these data collected by an automated Weather station (only capable of recording precipitation) and it is sending the data to a server in 5 minute intervals.
-Also assume that the weather station is already upload the data at 10:00:00 and it'll upload data again in 10:05:00 and 10:10:00 
+Lets say that, these data collected by an automated Weather station (only capable of measuring precipitation) and it is sending the data to a server in 5 minute intervals.
+Also assume that the weather station is already uploaded the data at 10:00:00 and it wants to upload data in 10:05:00 and 10:10:00 
 time steps. Then the two requests data should be as below.
 
 **Request 1** (At `10:05:00`)
@@ -159,11 +159,11 @@ time steps. Then the two requests data should be as below.
 }
 ```
 **Notes**: Since this weather station is capable of measuring only Precipitation, other fields are ignored.
-Further precipitation is measured in `mm` (millimeters), thus reporting Precipitation in `in` (inches) ignored.
+Further the Precipitation is measured in `mm` (millimeters), thus reporting Precipitation in `in` (inches) is ignored.
 
-##### Example 2
+#### Example 2
 
-For the weather station mentioned in example 1, is modified and added the capability to measure the temperature in Fahrenheit (not in celsius)
+Lets assume that the weather station mentioned in example 1, is modified and added the capability to measure the Temperature in Fahrenheit (not in Celsius)
 as shown in the graph below,
  
 ```bash
@@ -180,7 +180,7 @@ Temperature (Fahrenheit)
     10:00:00            10:05:00            10:10:00
 ```
 
-Lets assume that temperature at 10:00:00 -> 98F, 10:05:00 -> 108 and 10:10:00 -> 102.
+Lets assume that Temperature values at 10:00:00 -> 98F, 10:05:00 -> 108 and 10:10:00 -> 102.
 Then the two requests data should be as below.
 
 **Request 1** (At `10:05:00`)
@@ -225,7 +225,7 @@ Then the two requests data should be as below.
 **Notes**: Since this weather station is capable of only measuring Precipitation and Temperature, other fields are ignored.
 Further Temperature is measured in `F` (Fahrenheit), thus reporting Temperature in `C` (Celsius) ignored.
 
-##### Example 3
+#### Example 3
 
 Lets consider the example 1 & 2 scenarios, but weather station is planing to upload the data in 10 minutes interval and
 sample the data in 5 minutes interval (e.g. in order to save the battery while communicating over network).
@@ -257,3 +257,14 @@ Then the request data should be as below.
 }
 ```
 **Notes**: Notice that there are two objects in the `data` list field.
+
+All the date time should be in "YYYY-MM-DD HH:MM:SS" format.
+
+**Okay**
+- 2018-01-01 10:00:00
+
+**Wrong**
+- ~~2018-1-1 10:00:00~~
+- ~~2018-1-1 10:0:0~~
+- ~~2018/01/01 10:00:00~~
+- ~~01/01/2018 10:00:00~~
