@@ -112,7 +112,7 @@ Accumulative Precipitation (mm)
 0.6 |                   _________________|                 !
 0.4 |          ________|        !                          !
 0.2 |_________|                 !                          !
-0.0 |___________________________!__________________________!_________________> (time)
+0.0 |___________________________!__________________________!_____________> (time)
     ^         ^        ^        ^        ^        ^        ^
     10:00:00 10:02:14 10:04:10 10:05:00 10:06:45 10:09:00 10:10:00
 ```
@@ -121,7 +121,7 @@ Lets say that, these data collected by an automated Weather station (only capabl
 Also assume that the weather station is already upload the data at 10:00:00 and it'll upload data again in 10:05:00 and 10:10:00 
 time steps. Then the two requests data should be as below.
 
-**Request 1** (At 10:05:00)
+**Request 1** (At `10:05:00`)
 ```json
 {
     "ID": "curw_test",
@@ -140,7 +140,7 @@ time steps. Then the two requests data should be as below.
 }
 ```
  
-**Request 2** (At 10:10:00)
+**Request 2** (At `10:10:00`)
 ```json
 {
     "ID": "curw_test",
@@ -171,19 +171,19 @@ Temperature (Fahrenheit)
     ^
     |
 108 |             ,.........                                 
-106 |         ...'   !      ',.........                         
-104 |       ,'       !                 ',     
-102 |     ,'         !                   ',...........          
-100 |...,'           !                        !        
- 98 |________________!________________________!______________> (time)
-    ^                ^                        ^   
-    10:00:00        10:05:00                 10:10:00
+106 |         ...'       !  ',.........                         
+104 |       ,'           !             ',     
+102 |     ,'             !               ',...........          
+100 |...,'               !                   !        
+ 98 |____________________!___________________!____________> (time)
+    ^                    ^                   ^   
+    10:00:00            10:05:00            10:10:00
 ```
 
 Lets assume that temperature at 10:00:00 -> 98F, 10:05:00 -> 108 and 10:10:00 -> 102.
 Then the two requests data should be as below.
 
-**Request 1** (At 10:05:00)
+**Request 1** (At `10:05:00`)
 ```json
 {
     "ID": "curw_test",
@@ -203,7 +203,7 @@ Then the two requests data should be as below.
 }
 ```
  
-**Request 2** (At 10:10:00)
+**Request 2** (At `10:10:00`)
 ```json
 {
     "ID": "curw_test",
@@ -232,7 +232,7 @@ sample the data in 5 minutes interval (e.g. in order to save the battery while c
 In that case, the weather station will send one request at 10:10:00 (Ignoring sending at 10:05:00) after 10:00:00.
 Then the request data should be as below.
 
-**Request** (At 10:10:00)
+**Request** (At `10:10:00`)
 ```json
 {
     "ID": "curw_test",
@@ -249,7 +249,7 @@ Then the request data should be as below.
         "tempf": "102"
     }],
     "health": {
-        "batt": "3.96"
+        "batt": "3.97"
     },
     "action": "updateraw",
     "softwaretype": "iCon",
