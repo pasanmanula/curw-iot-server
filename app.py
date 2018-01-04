@@ -70,7 +70,7 @@ except Exception as e:
 def update_weather_station():
     try:
         content = request.get_json(silent=True)
-        logger_bulk.info("%s", content)
+        logger_bulk.info("%s", json.dumps(content))
         if not isinstance(content, object) and not content and 'ID' in content:
             raise Exception("Invalid request. Abort ...")
     except Exception as json_error:
@@ -124,7 +124,7 @@ def update_weather_station():
 def update_weather_station_single():
     try:
         data = request.args.to_dict()
-        logger_single.info("%s", data)
+        logger_single.info("%s", json.dumps(data))
         if not isinstance(data, dict) and not data and 'ID' in data:
             raise Exception("Invalid request. Abort ...")
     except Exception as json_error:
