@@ -261,9 +261,11 @@ Then the request data should be as below.
 All the date time should be in "YYYY-MM-DD HH:MM:SS" format.
 
 **Okay**
+
 - 2018-01-01 10:00:00
 
 **Wrong**
+
 - ~~2018-1-1 10:00:00~~
 - ~~2018-1-1 10:0:0~~
 - ~~2018/01/01 10:00:00~~

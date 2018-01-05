@@ -85,7 +85,6 @@ def update_weather_station():
             return "Failure", 404
         timeseries = []
 
-        is_precip_in_mm = True if 'rainMM' in data[0] else False
         for time_step in data:
             sl_time = datetime.strptime(time_step['dateutc'], Constants.DATE_TIME_FORMAT) + Constants.SL_OFFSET
             # Mapping Response to common format
@@ -97,21 +96,57 @@ def update_weather_station():
             # -- Time
             new_time_step['Time'] = sl_time.strftime(Constants.DATE_TIME_FORMAT)
 
-            # -- TemperatureC
-            if 'tempc' in time_step:
-                new_time_step['TemperatureC'] = float(time_step['tempc'])
-            # -- TemperatureF
-            if 'tempf' in time_step:
-                new_time_step['TemperatureC'] = (float(time_step['tempf']) - 32) * 5 / 9
+            try:
+                # -- TemperatureC
+                if 'tempc' in time_step:
+                    new_time_step['TemperatureC'] = float(time_step['tempc'])
+            except Exception as tempc_error:
+                logger_bulk.error(tempc_error)
+                return "Bad Request: Unable Validate tempc field value", 400
+            try:
+                # -- TemperatureF
+                if 'tempf' in time_step:
+                    new_time_step['TemperatureC'] = (float(time_step['tempf']) - 32) * 5 / 9
+            except Exception as tempf_error:
+                logger_bulk.error(tempf_error)
+                return "Bad Request: Unable to validate tempf field value", 400
 
-            # -- PrecipitationMM
-            new_time_step['PrecipitationMM'] = float(time_step['rainMM']) \
-                if is_precip_in_mm else float(time_step['rainin']) * 25.4
+            try:
+                # -- PrecipitationMM
+                if 'rainMM' in time_step:
+                    new_time_step['PrecipitationMM'] = float(time_step['rainMM'])
+            except Exception as rainMM_error:
+                logger_bulk.error(rainMM_error)
+                return "Bad Request: Unable to validate rainMM field value", 400
+            try:
+                # -- PrecipitationIn
+                if 'rainin' in time_step:
+                    new_time_step['PrecipitationMM'] = float(time_step['rainin']) * 25.4
+            except Exception as rainin_error:
+                logger_bulk.error(rainin_error)
+                return "Bad Request: Unable to validate rainin field value", 400
+
+            try:
+                # TODO: Handle dailyrainMM from rainMM separately
+                # -- DailyPrecipitationMM
+                if 'dailyrainMM' in time_step:
+                    new_time_step['PrecipitationMM'] = float(time_step['dailyrainMM'])
+            except Exception as dailyrainMM_error:
+                logger_bulk.error(dailyrainMM_error)
+                return "Bad Request: Unable to validate dailyrainMM field value", 400
+            try:
+                # -- DailyPrecipitationIn
+                if 'dailyrainin' in time_step:
+                    new_time_step['PrecipitationMM'] = float(time_step['dailyrainin']) * 25.4
+            except Exception as dailyrainin_error:
+                logger_bulk.error(dailyrainin_error)
+                return "Bad Request: Unable to validate dailyrainin field value", 400
 
             timeseries.append(new_time_step)
 
+        print('timeseries::', timeseries)
         save_timeseries(db_adapter, station, timeseries, logger_bulk)
-        return "Success"
+        return "success"
     else:
         logger_bulk.warning("Unknown Station: %s", content.get('ID'))
         return "Failure", 404
@@ -192,7 +227,7 @@ def update_weather_station_single():
             dialog_data['ID'] = station['dialog']['stationId']
             dialog_data['PASSWORD'] = station['dialog']['password']
             forward_to_dialog_iot(dialog_data, logger_single)
-        return "Success"
+        return "success"
     else:
         logger_single.warning("Unknown Station: %s", data.get('ID'))
         return "Failure", 404
