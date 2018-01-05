@@ -33,3 +33,11 @@ def handle_duplicate_values(timeseries, validation=None):
     #         new_timeseries.append(step)
 
     return [list(x) for x in ordered_dict.items()]
+
+
+def is_number(s):
+    try:
+        float(s)
+        return True
+    except ValueError:
+        return False
