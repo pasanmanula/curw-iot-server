@@ -146,6 +146,17 @@ def update_weather_station():
                 logger_bulk.error(dailyrainin_error)
                 return "Bad Request: Unable to validate dailyrainin field value", 400
 
+            try:
+                # -- Rain Ticks
+                if 'rain' in time_step and isinstance(time_step['rain'], list):
+                    new_ticks = []
+                    for tick in time_step['rain']:
+                        new_ticks.append(Utils.get_date_time_object(tick))
+                    new_time_step['Ticks'] = new_ticks
+            except Exception as rainMM_error:
+                logger_bulk.error(rainMM_error)
+                return "Bad Request: Unable to validate rainMM field value", 400
+
             timeseries.append(new_time_step)
 
         print('timeseries::', timeseries)

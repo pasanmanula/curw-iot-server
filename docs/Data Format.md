@@ -4,14 +4,17 @@ This protocol is adapted from [PWS - Upload Protocol](http://wiki.wunderground.c
 It is capable of upload data with multiple sampling.
 
 ### URL
-<HOST_IP:PORT>/weatherstation/updateweatherstation
+
+`<HOST_IP:PORT>`/weatherstation/updateweatherstation
 
 ### Request Header
+
 ```bash
 Content-Type: application/json
 ```
 
 ### Request Method
+
 *POST*
 
 ### Request Body
@@ -38,7 +41,7 @@ Content-Type: application/json
         "batt": ""
     },
     "action": "updateraw",
-    "softwaretype": "iCon",
+    "softwaretype": "",
     "version": "1.3.6"
 }
 ```
@@ -180,7 +183,7 @@ Temperature (Fahrenheit)
     10:00:00            10:05:00            10:10:00
 ```
 
-Lets assume that Temperature values at 10:00:00 -> 98F, 10:05:00 -> 108 and 10:10:00 -> 102.
+Lets assume that Temperature values at `10:00:00` -> `98`F, `10:05:00` -> `108`F and `10:10:00` -> `102`F.
 Then the two requests data should be as below.
 
 **Request 1** (At `10:05:00`)
