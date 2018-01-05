@@ -10,7 +10,7 @@ from datetime import datetime
 from flask import Flask, request
 from curwmysqladapter import MySQLAdapter, Station
 from utils.UtilStation import get_station_hash_map, forward_to_weather_underground, forward_to_dialog_iot
-from utils import UtilValidation, UtilTimeseries
+from utils import UtilValidation, UtilTimeseries, Utils
 from config import Constants
 from route import api
 
@@ -82,19 +82,23 @@ def update_weather_station():
         data = content['data']
         if len(data) < 1:
             logger_bulk.error("Request does not have data")
-            return "Failure", 404
+            return "Request does not have any data", 404
         timeseries = []
 
         for time_step in data:
-            sl_time = datetime.strptime(time_step['dateutc'], Constants.DATE_TIME_FORMAT) + Constants.SL_OFFSET
-            # Mapping Response to common format
-            new_time_step = copy.deepcopy(common_format)
+            try:
+                sl_time = Utils.get_date_time_object(time_step['dateutc']) + Constants.SL_OFFSET
+                # Mapping Response to common format
+                new_time_step = copy.deepcopy(common_format)
 
-            # -- DateUTC
-            if 'dateutc' in time_step:
-                new_time_step['DateUTC'] = time_step['dateutc']
-            # -- Time
-            new_time_step['Time'] = sl_time.strftime(Constants.DATE_TIME_FORMAT)
+                # -- DateUTC
+                if 'dateutc' in time_step:
+                    new_time_step['DateUTC'] = Utils.get_date_time_object(time_step['dateutc'], as_str=True)
+                # -- Time
+                new_time_step['Time'] = sl_time.strftime(Constants.DATE_TIME_FORMAT)
+            except Exception as dateutc_error:
+                logger_bulk.error(dateutc_error)
+                return "Bad Request: " + str(dateutc_error), 400
 
             try:
                 # -- TemperatureC
