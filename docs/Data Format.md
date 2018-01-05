@@ -291,6 +291,7 @@ Then the request data should be as below.
 ```
 
 **Notes**: It is using [UNIX Timestamp](https://www.unixtimestamp.com/index.php) `1514801100`, instead of `2018-01-01 10:05:00` date time string.
+The `rain` field is an empty list, since there is not any ticks for given period.
 
 ### Common Pitfalls
 
