@@ -59,7 +59,7 @@ Content-Type: application/json
 Can send the details using appropriate fields.
 Eg. if the station is measuring temperature in Fahrenheit, then the value can be send with `tempf` field (avoid sending `tempc`). 
 
-- **dateutc** - [YYYY-MM-DD HH:MM:SS (mysql format)] In Universal Coordinated Time (UTC) Not local time
+- **dateutc** - [YYYY-MM-DD HH:MM:SS (mysql format) or UNIX Timestamp] In Universal Coordinated Time (UTC) Not local time
 
 - **tempf** - [F outdoor temperature]
 - **tempc** - [C outdoor temperature]
@@ -69,7 +69,7 @@ Eg. if the station is measuring temperature in Fahrenheit, then the value can be
 - **rainMM** - [rain millimeters over the past hour)] -- the accumulated rainfall in the past 60 min
 - **dailyrainMM** - [rain millimeters so far today in local time]
 
-- **rain** - [List of Date Time value of each tick of Rain Gauge tipping bucket in YYYY-MM-DD HH:MM:SS]
+- **rain** - [List of Date Time value of each tick of Rain Gauge tipping bucket in YYYY-MM-DD HH:MM:SS or UNIX Timestamp]
 
 - **winddir** - [0-360 instantaneous wind direction]
 - **windspeedmph** - [mph instantaneous wind speed]
@@ -257,6 +257,42 @@ Then the request data should be as below.
 }
 ```
 **Notes**: Notice that there are two objects in the `data` list field.
+
+#### Example 4
+
+Lets consider the example 3, where weather station is planing to upload the data in 10 minutes interval and
+sample the data in 5 minutes interval. Then the weather station will send one request at 10:10:00 (Ignoring sending at 10:05:00) after 10:00:00.
+Also assume that there is not any Precipitation during that time (Accumulative Precipitation value remain unchanged as 0.2mm).
+Then the request data should be as below.
+
+**Request** (At `10:10:00`)
+```json
+{
+    "ID": "curw_test",
+    "PASSWORD": "XXX",
+    "data": [{
+        "dateutc": "1514801100",
+        "dailyrainMM": "0.2",
+        "rain": [],
+        "tempf": "98"
+    }, {
+        "dateutc": "2018-01-01 10:10:00",
+        "dailyrainMM": "0.2",
+        "rain": [],
+        "tempf": "102"
+    }],
+    "health": {
+        "batt": "3.97"
+    },
+    "action": "updateraw",
+    "softwaretype": "iCon",
+    "version": "1.3.6"
+}
+```
+
+**Notes**: It is using [UNIX Timestamp](https://www.unixtimestamp.com/index.php) `1514801100`, instead of `2018-01-01 10:05:00` date time string.
+
+### Common Pitfalls
 
 All the date time should be in "YYYY-MM-DD HH:MM:SS" format.
 
