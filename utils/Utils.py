@@ -17,8 +17,8 @@ def get_date_time_object(value, as_str=False):
     :return: datetime object instance or date time string in "%Y-%m-%d %H:%M:%S" format
     """
     if isinstance(value, int) or (isinstance(value, str) and value.isdigit()):
-        return datetime.utcfromtimestamp(value).strftime(Constants.DATE_TIME_FORMAT) \
-            if as_str else datetime.utcfromtimestamp(value)
+        return datetime.utcfromtimestamp(float(value)).strftime(Constants.DATE_TIME_FORMAT) \
+            if as_str else datetime.utcfromtimestamp(float(value))
     elif isinstance(value, str):
         try:
             return datetime.strptime(value, Constants.DATE_TIME_FORMAT).strftime(Constants.DATE_TIME_FORMAT) \

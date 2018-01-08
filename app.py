@@ -298,7 +298,7 @@ def save_timeseries(adapter, station, timeseries, logger):
     for i in range(0, len(variables)):
         extracted_timeseries = UtilTimeseries.extract_single_variable_timeseries(timeseries, variables[i])
         if len(extracted_timeseries) < 1:
-            logger.warning('Timeseries of variable:%s does not have data. Skip ...', variables[i])
+            logger.debug('Timeseries of variable:%s does not have data. Skip ...', variables[i])
             continue
 
         meta['variable'] = variables[i]
