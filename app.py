@@ -10,7 +10,7 @@ from datetime import datetime
 from flask import Flask, request, jsonify
 from curwmysqladapter import MySQLAdapter, Station
 from utils.UtilStation import get_station_hash_map, forward_to_weather_underground, forward_to_dialog_iot
-from utils import UtilValidation, UtilTimeseries
+from utils import UtilValidation, UtilTimeseries, Utils
 from config import Constants
 from route import api
 
@@ -70,7 +70,7 @@ except Exception as e:
 def update_weather_station():
     try:
         content = request.get_json(silent=True)
-        logger_bulk.info("%s", content)
+        logger_bulk.info("%s", json.dumps(content))
         if not isinstance(content, object) and not content and 'ID' in content:
             raise Exception("Invalid request. Abort ...")
     except Exception as json_error:
@@ -82,36 +82,85 @@ def update_weather_station():
         data = content['data']
         if len(data) < 1:
             logger_bulk.error("Request does not have data")
-            return "Failure", 404
+            return "Request does not have any data", 404
         timeseries = []
 
-        is_precip_in_mm = True if 'rainMM' in data[0] else False
         for time_step in data:
-            sl_time = datetime.strptime(time_step['dateutc'], Constants.DATE_TIME_FORMAT) + Constants.SL_OFFSET
-            # Mapping Response to common format
-            new_time_step = copy.deepcopy(common_format)
+            try:
+                sl_time = Utils.get_date_time_object(time_step['dateutc']) + Constants.SL_OFFSET
+                # Mapping Response to common format
+                new_time_step = copy.deepcopy(common_format)
 
-            # -- DateUTC
-            if 'dateutc' in time_step:
-                new_time_step['DateUTC'] = time_step['dateutc']
-            # -- Time
-            new_time_step['Time'] = sl_time.strftime(Constants.DATE_TIME_FORMAT)
+                # -- DateUTC
+                if 'dateutc' in time_step:
+                    new_time_step['DateUTC'] = Utils.get_date_time_object(time_step['dateutc'], as_str=True)
+                # -- Time
+                new_time_step['Time'] = sl_time.strftime(Constants.DATE_TIME_FORMAT)
+            except Exception as dateutc_error:
+                logger_bulk.error('dateutc: %s', dateutc_error)
+                return "Bad Request: " + str(dateutc_error), 400
 
-            # -- TemperatureC
-            if 'tempc' in time_step:
-                new_time_step['TemperatureC'] = float(time_step['tempc'])
-            # -- TemperatureF
-            if 'tempf' in time_step:
-                new_time_step['TemperatureC'] = (float(time_step['tempf']) - 32) * 5 / 9
+            try:
+                # -- TemperatureC
+                if 'tempc' in time_step:
+                    new_time_step['TemperatureC'] = float(time_step['tempc'])
+            except Exception as tempc_error:
+                logger_bulk.error('tempc: %s', tempc_error)
+                return "Bad Request: Unable Validate tempc field value", 400
+            try:
+                # -- TemperatureF
+                if 'tempf' in time_step:
+                    new_time_step['TemperatureC'] = (float(time_step['tempf']) - 32) * 5 / 9
+            except Exception as tempf_error:
+                logger_bulk.error('tempf: %s', tempf_error)
+                return "Bad Request: Unable to validate tempf field value", 400
 
-            # -- PrecipitationMM
-            new_time_step['PrecipitationMM'] = float(time_step['rainMM']) \
-                if is_precip_in_mm else float(time_step['rainin']) * 25.4
+            try:
+                # -- PrecipitationMM
+                if 'rainMM' in time_step:
+                    new_time_step['PrecipitationMM'] = float(time_step['rainMM'])
+            except Exception as rainMM_error:
+                logger_bulk.error('rainMM: %s', rainMM_error)
+                return "Bad Request: Unable to validate rainMM field value", 400
+            try:
+                # -- PrecipitationIn
+                if 'rainin' in time_step:
+                    new_time_step['PrecipitationMM'] = float(time_step['rainin']) * 25.4
+            except Exception as rainin_error:
+                logger_bulk.error('rainin: %s', rainin_error)
+                return "Bad Request: Unable to validate rainin field value", 400
+
+            try:
+                # TODO: Handle dailyrainMM from rainMM separately
+                # -- DailyPrecipitationMM
+                if 'dailyrainMM' in time_step:
+                    new_time_step['PrecipitationMM'] = float(time_step['dailyrainMM'])
+            except Exception as dailyrainMM_error:
+                logger_bulk.error('dailyrainMM: %s', dailyrainMM_error)
+                return "Bad Request: Unable to validate dailyrainMM field value", 400
+            try:
+                # -- DailyPrecipitationIn
+                if 'dailyrainin' in time_step:
+                    new_time_step['PrecipitationMM'] = float(time_step['dailyrainin']) * 25.4
+            except Exception as dailyrainin_error:
+                logger_bulk.error('dailyrainin: %s', dailyrainin_error)
+                return "Bad Request: Unable to validate dailyrainin field value", 400
+
+            try:
+                # -- Rain Ticks
+                if 'rain' in time_step and isinstance(time_step['rain'], list):
+                    new_ticks = []
+                    for tick in time_step['rain']:
+                        new_ticks.append(Utils.get_date_time_object(tick))
+                    new_time_step['Ticks'] = new_ticks
+            except Exception as rain_error:
+                logger_bulk.error('rain: %s', rain_error)
+                return "Bad Request: Unable to validate rain field list", 400
 
             timeseries.append(new_time_step)
 
         save_timeseries(db_adapter, station, timeseries, logger_bulk)
-        return "Success"
+        return "success"
     else:
         logger_bulk.warning("Unknown Station: %s", content.get('ID'))
         return "Failure", 404
@@ -124,7 +173,7 @@ def update_weather_station():
 def update_weather_station_single():
     try:
         data = request.args.to_dict()
-        logger_single.info("%s", data)
+        logger_single.info("%s", json.dumps(data))
         if not isinstance(data, dict) and not data and 'ID' in data:
             raise Exception("Invalid request. Abort ...")
     except Exception as json_error:
@@ -192,7 +241,7 @@ def update_weather_station_single():
             dialog_data['ID'] = station['dialog']['stationId']
             dialog_data['PASSWORD'] = station['dialog']['password']
             forward_to_dialog_iot(dialog_data, logger_single)
-        return "Success"
+        return "success"
     else:
         logger_single.warning("Unknown Station: %s", data.get('ID'))
         return "Failure", 404
@@ -249,7 +298,7 @@ def save_timeseries(adapter, station, timeseries, logger):
     for i in range(0, len(variables)):
         extracted_timeseries = UtilTimeseries.extract_single_variable_timeseries(timeseries, variables[i])
         if len(extracted_timeseries) < 1:
-            logger.warning('Timeseries of variable:%s does not have data. Skip ...', variables[i])
+            logger.debug('Timeseries of variable:%s does not have data. Skip ...', variables[i])
             continue
 
         meta['variable'] = variables[i]

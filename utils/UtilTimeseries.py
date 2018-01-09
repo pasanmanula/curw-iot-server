@@ -13,6 +13,25 @@ def extract_single_variable_timeseries(timeseries, variable, opts=None):
                 new_timeseries.append([t['Time'], t['PrecipitationMM']])
         return new_timeseries
 
+    def daily_precipitation(my_timeseries):
+        # TODO: Handle rainMM and dailyrainMM separately
+        print('Precipitation:: DailyPrecipitationMM')
+        new_timeseries = []
+        for t in my_timeseries:
+            if t['DailyPrecipitationMM'] is not None:
+                new_timeseries.append([t['Time'], t['DailyPrecipitationMM']])
+        return new_timeseries
+
+    def ticks(my_timeseries):
+        # HACK
+        print('Tick:: Ticks')
+        new_timeseries = []
+        for t in my_timeseries:
+            if t['Ticks'] is not None:
+                for tick in t['Ticks']:
+                    new_timeseries.append([tick, 1])
+        return new_timeseries
+
     def temperature(my_timeseries):
         print('Temperature:: TemperatureC')
         new_timeseries = []
@@ -67,6 +86,8 @@ def extract_single_variable_timeseries(timeseries, variable, opts=None):
 
     variable_dict = {
         'Precipitation': precipitation,
+        'DailyPrecipitation': daily_precipitation,
+        'Tick': ticks,
         'Temperature': temperature,
         'WindSpeed': wind_speed,
         'WindGust': wind_gust,
