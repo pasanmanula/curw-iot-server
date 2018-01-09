@@ -16,5 +16,5 @@ setup(
     author_email='gckarunarathne@gmail.com',
     url='https://github.com/gihankarunarathne/curw-iot-server',
     license=license_file,
-    install_requires=['requests', 'pybald-routes', 'uwsgi', 'Flask']
+    install_requires=['requests', 'pybald-routes', 'uwsgi', 'flask']
 )
