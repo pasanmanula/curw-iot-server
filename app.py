@@ -7,7 +7,7 @@ import copy
 from logging.config import dictConfig
 from os.path import join as pjoin
 from datetime import datetime
-from flask import Flask, request, jsonify
+from flask import Flask, request
 from curwmysqladapter import MySQLAdapter, Station
 from utils.UtilStation import get_station_hash_map, forward_to_weather_underground, forward_to_dialog_iot
 from utils import UtilValidation, UtilTimeseries, Utils
@@ -340,32 +340,6 @@ def save_timeseries(adapter, station, timeseries, logger):
 @app.route('/')
 def index():
     return "Welcome to CUrW !"
-
-
-tasks = [
-    {
-        'id': 1,
-        'title': 'Buy groceries',
-        'description': 'Milk, Cheese, Pizza, Fruit, Tylenol',
-        'done': False
-    },
-    {
-        'id': 2,
-        'title': 'Learn Python',
-        'description': 'Need to find a good Python tutorial on the web',
-        'done': False
-    }
-]
-
-
-@app.route('/test', methods=['GET'])
-def test_api():
-    return jsonify({'tasks': tasks})
-
-
-@app.errorhandler(500)
-def internal_error():
-    return jsonify({'error': 'Internal Server Error'})
 
 
 app.register_blueprint(api.output_api)
