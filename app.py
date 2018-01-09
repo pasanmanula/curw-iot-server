@@ -18,10 +18,10 @@ app = Flask(__name__)
 
 try:
     root_dir = os.path.dirname(os.path.realpath(__file__))
-    config = json.loads(open(pjoin(root_dir, './config/CONFIG.json')).read())
+    config = json.loads(open(pjoin(root_dir, 'config/CONFIG.json')).read())
 
     # Initialize Logger
-    logging_config = json.loads(open(pjoin(root_dir, './config/LOGGING_CONFIG.json')).read())
+    logging_config = json.loads(open(pjoin(root_dir, 'config/LOGGING_CONFIG.json')).read())
     dictConfig(logging_config)
     logger_single = logging.getLogger('single')
     logger_bulk = logging.getLogger('bulk')
@@ -44,18 +44,18 @@ try:
 
     db_adapter = MySQLAdapter(host=MYSQL_HOST, user=MYSQL_USER, password=MYSQL_PASSWORD, db=MYSQL_DB)
     # Get Station Data for Bulk Data Format
-    STATION_CONFIG = pjoin(root_dir, './config/StationConfig.json')
+    STATION_CONFIG = pjoin(root_dir, 'config/StationConfig.json')
     CON_DATA = json.loads(open(STATION_CONFIG).read())
     stations_map = get_station_hash_map(CON_DATA['stations'])
 
     # Get Station Data for Single Upload Chinese weather stations
-    STATION_CONFIG_WU = pjoin(root_dir, './config/StationConfigWU.json')
+    STATION_CONFIG_WU = pjoin(root_dir, 'config/StationConfigWU.json')
     CON_WU_DATA = json.loads(open(STATION_CONFIG_WU).read())
     wu_stations_map = get_station_hash_map(CON_WU_DATA['stations'])
 
     # Create common format with None values
     script_path = os.path.dirname(os.path.realpath(__file__))
-    common_format = json.loads(open(os.path.join(script_path, './config/TimeStep.json')).read())
+    common_format = json.loads(open(os.path.join(script_path, 'config/TimeStep.json')).read())
     for key in common_format:
         common_format[key] = None
 
@@ -343,6 +343,7 @@ def index():
 
 
 app.register_blueprint(api.output_api)
+
 
 if __name__ == '__main__':
     app.run(debug=True)
