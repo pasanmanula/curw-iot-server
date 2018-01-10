@@ -87,15 +87,23 @@ def update_weather_station():
 
         for time_step in data:
             try:
-                sl_time = Utils.get_date_time_object(time_step['dateutc']) + Constants.SL_OFFSET
                 # Mapping Response to common format
                 new_time_step = copy.deepcopy(common_format)
+                is_utc_date_time = True
 
                 # -- DateUTC
                 if 'dateutc' in time_step:
                     new_time_step['DateUTC'] = Utils.get_date_time_object(time_step['dateutc'], as_str=True)
-                # -- Time
-                new_time_step['Time'] = sl_time.strftime(Constants.DATE_TIME_FORMAT)
+                    # -- Time
+                    sl_time = Utils.get_date_time_object(time_step['dateutc']) + Constants.SL_OFFSET
+                    new_time_step['Time'] = sl_time.strftime(Constants.DATE_TIME_FORMAT)
+                # -- DateIST
+                if 'dateist' in time_step:
+                    is_utc_date_time = False
+                    utc_time = Utils.get_date_time_object(time_step['dateist']) - Constants.SL_OFFSET
+                    new_time_step['DateUTC'] = utc_time.strftime(Constants.DATE_TIME_FORMAT)
+                    # -- Time
+                    new_time_step['Time'] = Utils.get_date_time_object(time_step['dateist'], as_str=True)
             except Exception as dateutc_error:
                 logger_bulk.error('dateutc: %s', dateutc_error)
                 return "Bad Request: " + str(dateutc_error), 400
@@ -151,7 +159,8 @@ def update_weather_station():
                 if 'rain' in time_step and isinstance(time_step['rain'], list):
                     new_ticks = []
                     for tick in time_step['rain']:
-                        new_ticks.append(Utils.get_date_time_object(tick))
+                        new_ticks.append(Utils.get_date_time_object(tick) - Constants.SL_OFFSET
+                                         if is_utc_date_time else Utils.get_date_time_object(tick))
                     new_time_step['Ticks'] = new_ticks
             except Exception as rain_error:
                 logger_bulk.error('rain: %s', rain_error)
