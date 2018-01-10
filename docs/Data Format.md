@@ -25,6 +25,7 @@ Content-Type: application/json
     "PASSWORD": "",
     "data": [{
         "dateutc": "YYYY-MM-DD HH:MM:SS",
+        "dateist": "YYYY-MM-DD HH:MM:SS",
         "rainin": "",
         "rainMM": "",
         "dailyrainin": "",
@@ -63,6 +64,7 @@ Can send the details using appropriate fields.
 Eg. if the station is measuring temperature in Fahrenheit, then the value can be send with `tempf` field (avoid sending `tempc`). 
 
 - **dateutc** - [YYYY-MM-DD HH:MM:SS (mysql format) or UNIX Timestamp] In Universal Coordinated Time (UTC) Not local time
+- **dateist** - [YYYY-MM-DD HH:MM:SS (mysql format) or UNIX Timestamp] In Indian Standard Time (IST)
 
 - **tempf** - [F outdoor temperature]
 - **tempc** - [C outdoor temperature]
@@ -73,6 +75,8 @@ Eg. if the station is measuring temperature in Fahrenheit, then the value can be
 - **dailyrainMM** - [rain millimeters so far today in local time]
 
 - **rain** - [List of Date Time value of each tick of Rain Gauge tipping bucket in YYYY-MM-DD HH:MM:SS or UNIX Timestamp]
+             If `dateutc` used, rain ticks Date Time consider as in UTC.
+             If `dateist` used, rain ticks Date Time consider as in IST.
 
 - **winddir** - [0-360 instantaneous wind direction]
 - **windspeedmph** - [mph instantaneous wind speed]
