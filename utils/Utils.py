@@ -34,4 +34,4 @@ def get_float(value, filed_name, logger):
         return float(value)
     except Exception as error:
         logger.error('%s: %s', filed_name, error)
-        raise Exception(f"Unable to validate {filed_name} field value")
+        raise Exception("Unable to validate %s field value" % filed_name)
