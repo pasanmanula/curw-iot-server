@@ -105,8 +105,8 @@ def update_weather_station():
                     new_time_step['DateUTC'] = utc_time.strftime(Constants.DATE_TIME_FORMAT)
                     # -- Time
                     new_time_step['Time'] = Utils.get_date_time_object(time_step['dateist'], as_str=True)
-                if 'DateUTC' not in time_step:
-                    raise Exception("Unable to find dateutc, dateist field")
+                if 'DateUTC' not in new_time_step:
+                    raise Exception("Unable to find dateutc or dateist field")
             except Exception as dateutc_error:
                 logger_bulk.error('dateutc: %s', dateutc_error)
                 return "Bad Request: " + str(dateutc_error), 400
