@@ -66,8 +66,12 @@ Eg. if the station is measuring temperature in Fahrenheit, then the value can be
 - **dateutc** - [YYYY-MM-DD HH:MM:SS (mysql format) or UNIX Timestamp] In Universal Coordinated Time (UTC) Not local time
 - **dateist** - [YYYY-MM-DD HH:MM:SS (mysql format) or UNIX Timestamp] In Indian Standard Time (IST)
 
+<br>
+
 - **tempf** - [F outdoor temperature]
 - **tempc** - [C outdoor temperature]
+
+<br>
 
 - **rainin** - [rain inches over the past hour)] -- the accumulated rainfall in the past 60 min
 - **dailyrainin** - [rain inches so far today in local time]
@@ -78,6 +82,8 @@ Eg. if the station is measuring temperature in Fahrenheit, then the value can be
              If `dateutc` used, rain ticks Date Time consider as in UTC.
              If `dateist` used, rain ticks Date Time consider as in IST.
 
+<br>
+
 - **winddir** - [0-360 instantaneous wind direction]
 - **windspeedmph** - [mph instantaneous wind speed]
 - **windgustmph** - [mph current wind gust, using software specific time period]
@@ -86,6 +92,22 @@ Eg. if the station is measuring temperature in Fahrenheit, then the value can be
 - **winddir_avg2m** - [0-360 2 minute average wind direction]
 - **windgustmph_10m** - [mph past 10 minutes wind gust mph ]
 - **windgustdir_10m** - [0-360 past 10 minutes wind gust direction]
+
+<br>
+
+- **humidity** - [% outdoor humidity 0-100%]
+- **dewptf** - [F outdoor dewpoint F]
+- **dewptc** - [F outdoor dewpoint C]
+
+<br>
+
+- **baromin** - [barometric pressure inches]
+- **baromMM** - [barometric pressure millimeters]
+
+<br>
+
+- **solarradiation** - [W/m^2]
+- **UV** - [index]
 
 ### Response
 
