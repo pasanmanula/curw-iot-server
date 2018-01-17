@@ -71,6 +71,7 @@ def update_weather_station():
     try:
         content = request.get_json(silent=True)
         logger_bulk.info("%s", json.dumps(content))
+        # logger_bulk.info("Headers:: %s", json.dumps(request.headers))
         if not isinstance(content, object) and not content and 'ID' in content:
             raise Exception("Invalid request. Abort ...")
     except Exception as json_error:
@@ -104,6 +105,8 @@ def update_weather_station():
                     new_time_step['DateUTC'] = utc_time.strftime(Constants.DATE_TIME_FORMAT)
                     # -- Time
                     new_time_step['Time'] = Utils.get_date_time_object(time_step['dateist'], as_str=True)
+                if 'DateUTC' not in time_step:
+                    raise Exception("Unable to find dateutc, dateist field")
             except Exception as dateutc_error:
                 logger_bulk.error('dateutc: %s', dateutc_error)
                 return "Bad Request: " + str(dateutc_error), 400
