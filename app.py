@@ -169,6 +169,34 @@ def update_weather_station():
                 logger_bulk.error('rain: %s', rain_error)
                 return "Bad Request: Unable to validate rain field list", 400
 
+            try:
+                # -- WindSpeedKMH
+                if 'windspeedkmh' in time_step:
+                    new_time_step['WindSpeedM/S'] = Utils.get_float(time_step['windspeedkmh'], 'windspeedkmh', logger_bulk) / 3.6
+                # -- WindSpeedMPH
+                if 'windspeedmph' in time_step:
+                    new_time_step['WindSpeedM/S'] = Utils.get_float(time_step['windspeedmph'], 'windspeedmph', logger_bulk) * 1.609344 / 3.6
+                # -- WindGustKMH
+                if 'windgustkmh' in time_step:
+                    new_time_step['WindGustM/S'] = Utils.get_float(time_step['windgustkmh'], 'windgustkmh', logger_bulk) / 3.6
+                # -- WindGustMPH
+                if 'windgustmph' in time_step:
+                    new_time_step['WindGustM/S'] = Utils.get_float(time_step['windgustmph'], 'windgustmph', logger_bulk) * 1.609344 / 3.6
+                # -- WindDirection
+                if 'winddir' in time_step:
+                    new_time_step['WindDirectionDegrees'] = Utils.get_float(time_step['winddir'], 'winddir', logger_bulk)
+
+                # -- Humidity
+                if 'humidity' in time_step:
+                    new_time_step['Humidity'] = Utils.get_float(time_step['humidity'], 'humidity', logger_bulk)
+
+                # -- SolarRadiation
+                if 'solarradiation' in time_step:
+                    new_time_step['SolarRadiationW/m2'] = Utils.get_float(time_step['solarradiation'], 'solarradiation', logger_bulk)
+            except Exception as error:
+                logger_bulk.error(error)
+                return "Bad Request: " + str(error), 400
+
             timeseries.append(new_time_step)
 
         save_timeseries(db_adapter, station, timeseries, logger_bulk)

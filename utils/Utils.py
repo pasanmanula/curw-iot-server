@@ -27,3 +27,11 @@ def get_date_time_object(value, as_str=False):
             raise datetime_error
     else:
         raise Exception("Value should be UNIX timestamp or date time string")
+
+
+def get_float(value, filed_name, logger):
+    try:
+        return float(value)
+    except Exception as error:
+        logger.error('%s: %s', filed_name, error)
+        raise Exception(f"Unable to validate {filed_name} field value")
