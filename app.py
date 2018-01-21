@@ -161,6 +161,7 @@ def update_weather_station():
                 # -- Rain Ticks
                 if 'rain' in time_step and isinstance(time_step['rain'], list):
                     new_ticks = []
+                    # Convert all ticks into SL time
                     for tick in time_step['rain']:
                         new_ticks.append(Utils.get_date_time_object(tick) + Constants.SL_OFFSET
                                          if is_utc_date_time else Utils.get_date_time_object(tick, unix_offset=Constants.SL_OFFSET))
