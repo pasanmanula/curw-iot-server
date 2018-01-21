@@ -52,7 +52,7 @@
             "min_values": ["0", "0", "0", "0", "0", "0", "0"],
             "description": "UDUWAWALA STATION",
             "run_name": "CUrW IoT",
-            "wunderground": {"stationId": "IKANDY2", "password": "lm120jbq"},
+            "wunderground": {"stationId": "IKANDY2", "password": "lm120jbq"}
         }
     ]
 }
