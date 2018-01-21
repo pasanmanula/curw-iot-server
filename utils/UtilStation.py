@@ -7,7 +7,7 @@ def get_station_hash_map(stations):
         if station.get('stationId', None) is not None:
             hash_map[station.get('stationId')] = station
         # HACK: Handle stations which are not configure with `stationId` that we wanted
-        if station.get('station_alias', None) is not None:
+        if 'station_alias' in station and station.get('station_alias', None) is not None:
             hash_map[station.get('station_alias')] = station
 
     return hash_map
