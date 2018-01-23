@@ -10,7 +10,7 @@ from datetime import datetime
 from flask import Flask, request
 from curwmysqladapter import MySQLAdapter, Station
 from utils.UtilStation import get_station_hash_map, forward_to_weather_underground, forward_to_dialog_iot
-from utils import UtilValidation, UtilTimeseries, Utils
+from utils import UtilValidation, UtilTimeseries, Utils, UtilWarp10
 from config import Constants
 from route import api
 
@@ -26,6 +26,7 @@ try:
     logger_single = logging.getLogger('single')
     logger_bulk = logging.getLogger('bulk')
     logger_api = logging.getLogger('api')
+    logger_warp10 = logging.getLogger('warp10')
     # logger.addHandler(logging.StreamHandler())
 
     MYSQL_HOST = "localhost"
@@ -198,6 +199,12 @@ def update_weather_station():
                 logger_bulk.error(error)
                 return "Bad Request: " + str(error), 400
 
+            # Froward to the WARP10 Platform
+            try:
+                UtilWarp10.forward_to_warp10_platform(station, new_time_step)
+            except Exception as forwarding_error:
+                logger_warp10.error(forwarding_error)
+
             timeseries.append(new_time_step)
 
         save_timeseries(db_adapter, station, timeseries, logger_bulk)
@@ -282,6 +289,13 @@ def update_weather_station_single():
             dialog_data['ID'] = station['dialog']['stationId']
             dialog_data['PASSWORD'] = station['dialog']['password']
             forward_to_dialog_iot(dialog_data, logger_single)
+
+        # Froward to the WARP10 Platform
+        try:
+            UtilWarp10.forward_to_warp10_platform(station, new_time_step)
+        except Exception as forwarding_error:
+            logger_warp10.error(forwarding_error)
+
         return "success"
     else:
         logger_single.warning("Unknown Station: %s", data.get('ID'))
