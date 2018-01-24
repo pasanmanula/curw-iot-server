@@ -5,7 +5,7 @@ import pytz
 from config import Constants
 
 WARP10_CONFIGS = {
-    'host': '35.225.12.129',
+    'host': '10.128.0.2',
     'port': 8080,
     'class-name-prefix': 'curw.test.',
     'read-token': 'SRBXW1yUp5sJz4Czr0cn_Q4pXtkQtyfmOhqHuqlkZ.x8XA5OOE42NKw.bOd6xyXB4t3oQbijIIMimtlUhBWTd_zjGY6d2DWjlH_NqM5FY533w9cnCF7VrzE5LIcoSS8wBslClD0Vb1MXpvM4CN_PE1H41UGWy.HN',
@@ -53,7 +53,7 @@ def forward_to_warp10_platform(station, time_step):
         # NAME{LABELS}
         station_id = station['station_meta'][0]
         gts_class_name = WARP10_CONFIGS['class-name-prefix'] + str(key)
-        labels = '{staionId=%s}' % station_id
+        labels = '{stationId=%s}' % station_id
         data = data + (gts_class_name + labels)
 
         # Space separation
