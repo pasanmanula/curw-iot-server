@@ -234,49 +234,57 @@ def update_weather_station_single():
         # Mapping Response to common format
         new_time_step = copy.deepcopy(common_format)
 
-        # -- DateUTC
-        if 'dateutc' in data:
-            new_time_step['DateUTC'] = data['dateutc']
-        # -- Time
-        new_time_step['Time'] = sl_time.strftime(Constants.DATE_TIME_FORMAT)
+        try:
+            # -- DateUTC
+            if 'dateutc' in data:
+                new_time_step['DateUTC'] = data['dateutc']
+            # -- Time
+            new_time_step['Time'] = sl_time.strftime(Constants.DATE_TIME_FORMAT)
+        except Exception as dateutc_error:
+            logger_single.error('dateutc: %s', dateutc_error)
+            return "Bad Request: " + str(dateutc_error), 400
 
-        # -- TemperatureC
-        if 'tempc' in data:
-            new_time_step['TemperatureC'] = float(data['tempc'])
-        # -- TemperatureF
-        if 'tempf' in data:
-            new_time_step['TemperatureC'] = (float(data['tempf']) - 32) * 5 / 9
+        try:
+            # -- TemperatureC
+            if 'tempc' in data:
+                new_time_step['TemperatureC'] = Utils.get_float(data['tempc'], 'tempc', logger_single)
+            # -- TemperatureF
+            if 'tempf' in data:
+                new_time_step['TemperatureC'] = (Utils.get_float(data['tempf'], 'tempf', logger_single) - 32) * 5 / 9
 
-        # -- PrecipitationMM
-        if 'rainMM' in data:
-            new_time_step['PrecipitationMM'] = float(data['rainMM'])
-        # -- PrecipitationIn
-        if 'rainin' in data:
-            new_time_step['PrecipitationMM'] = float(data['rainin']) * 25.4
+            # -- PrecipitationMM
+            if 'rainMM' in data:
+                new_time_step['PrecipitationMM'] = Utils.get_float(data['rainMM'], 'rainMM', logger_single)
+            # -- PrecipitationIn
+            if 'rainin' in data:
+                new_time_step['PrecipitationMM'] = Utils.get_float(data['rainin'], 'rainin', logger_single) * 25.4
 
-        # -- WindSpeedKMH
-        if 'windspeedkmh' in data:
-            new_time_step['WindSpeedM/S'] = float(data['windspeedkmh']) / 3.6
-        # -- WindSpeedMPH
-        if 'windspeedmph' in data:
-            new_time_step['WindSpeedM/S'] = float(data['windspeedmph']) * 1.609344 / 3.6
-        # -- WindGustKMH
-        if 'windgustkmh' in data:
-            new_time_step['WindGustM/S'] = float(data['windgustkmh']) / 3.6
-        # -- WindGustMPH
-        if 'windgustmph' in data:
-            new_time_step['WindGustM/S'] = float(data['windgustmph']) * 1.609344 / 3.6
-        # -- WindDirection
-        if 'winddir' in data:
-            new_time_step['WindDirectionDegrees'] = float(data['winddir'])
+            # -- WindSpeedKMH
+            if 'windspeedkmh' in data:
+                new_time_step['WindSpeedM/S'] = Utils.get_float(data['windspeedkmh'], 'windspeedkmh', logger_single) / 3.6
+            # -- WindSpeedMPH
+            if 'windspeedmph' in data:
+                new_time_step['WindSpeedM/S'] = Utils.get_float(data['windspeedmph'], 'windspeedmph', logger_single) * 1.609344 / 3.6
+            # -- WindGustKMH
+            if 'windgustkmh' in data:
+                new_time_step['WindGustM/S'] = Utils.get_float(data['windgustkmh'], 'windgustkmh', logger_single) / 3.6
+            # -- WindGustMPH
+            if 'windgustmph' in data:
+                new_time_step['WindGustM/S'] = Utils.get_float(data['windgustmph'], 'windgustmph', logger_single) * 1.609344 / 3.6
+            # -- WindDirection
+            if 'winddir' in data:
+                new_time_step['WindDirectionDegrees'] = Utils.get_float(data['winddir'], 'winddir', logger_single)
 
-        # -- Humidity
-        if 'humidity' in data:
-            new_time_step['Humidity'] = float(data['humidity'])
+            # -- Humidity
+            if 'humidity' in data:
+                new_time_step['Humidity'] = Utils.get_float(data['humidity'], 'humidity', logger_single)
 
-        # -- SolarRadiation
-        if 'solarradiation' in data:
-            new_time_step['SolarRadiationW/m2'] = float(data['solarradiation'])
+            # -- SolarRadiation
+            if 'solarradiation' in data:
+                new_time_step['SolarRadiationW/m2'] = Utils.get_float(data['solarradiation'], 'solarradiation', logger_single)
+        except Exception as error:
+            logger_single.error(error)
+            return "Bad Request: " + str(error), 400
 
         save_timeseries(db_adapter, station, [new_time_step], logger_single)
         if 'wunderground' in station:
