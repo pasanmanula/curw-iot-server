@@ -48,6 +48,18 @@
             "min_values": ["0", "0", "0"],
             "description": "HINGURANA STATION",
             "run_name": "A&T Labs"
+        }, {
+            "stationId": "curw_waga",
+            "name": "Waga",
+            "station_meta": ["curw_waga", "Waga", 6.906780, 80.118275, 0, "Waga Station"],
+            "source": "WeatherStation",
+            "type": "Observed",
+            "variables": ["Precipitation", "Temperature", "Tick"],
+            "units": ["mm", "oC", "-"],
+            "max_values": ["120", "40", "1"],
+            "min_values": ["0", "0", "0"],
+            "description": "WAGA STATION",
+            "run_name": "A&T Labs"
         }
     ]
 }
