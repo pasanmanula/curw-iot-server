@@ -7,9 +7,9 @@
             "source": "WeatherStation",
             "type": "Observed",
             "variables": ["Precipitation", "Temperature", "Tick"],
-            "units": ["mm", "oC"],
-            "max_values": ["120", "40"],
-            "min_values": ["0", "0"],
+            "units": ["mm", "oC", "-"],
+            "max_values": ["120", "40", "1"],
+            "min_values": ["0", "0", "0"],
             "description": "Mahapallegama",
             "run_name": "A&T Labs"
         }, {
@@ -31,9 +31,9 @@
             "source": "WeatherStation",
             "type": "Observed",
             "variables": ["Precipitation", "Temperature", "Tick"],
-            "units": ["mm", "oC"],
-            "max_values": ["120", "40"],
-            "min_values": ["0", "0"],
+            "units": ["mm", "oC", "-"],
+            "max_values": ["120", "40", "1"],
+            "min_values": ["0", "0", "0"],
             "description": "Ambatale",
             "run_name": "A&T Labs"
         }, {
