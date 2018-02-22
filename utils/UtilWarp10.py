@@ -40,7 +40,7 @@ def forward_to_warp10_platform(station, time_step):
     data = ''
     for key, value in time_step.items():
         # Think of a way to store 'Ticks'.
-        if key == 'Ticks' or key == 'DateUTC' or key == 'Time' or (not value):
+        if key == 'Ticks' or key == 'DateUTC' or key == 'Time':
             continue
         # TS/LAT:LON/ELEV
         lat = station['station_meta'][2]
