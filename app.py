@@ -383,7 +383,9 @@ def save_timeseries(adapter, station, timeseries, logger):
                 'to': end_date_time.strftime("%Y-%m-%d %H:%M:%S")
             }
             existing_timeseries = adapter.retrieve_timeseries(meta_query, query_opts)
-            if len(existing_timeseries[0]['timeseries']) > 0 and not force_insert:
+            if not isinstance(existing_timeseries, list):
+                logger.error('Timeseries must be a list.\n', meta_query, query_opts)
+            elif len(existing_timeseries) > 0 and len(existing_timeseries[0]['timeseries']) > 0 and not force_insert:
                 logger.warning('Timeseries already exists. Use force insert to insert data.\n')
                 continue
 
