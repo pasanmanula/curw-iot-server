@@ -324,7 +324,7 @@ def save_timeseries(adapter, station, timeseries, logger):
     logger.debug('\n**************** STATION **************')
     logger.debug('station name: %s, run_name: %s', station['name'], station['run_name'])
     #  Check whether station exists
-    is_station_exists = adapter.get_station({'name': station['name']})
+    is_station_exists = adapter.get_station({'name': station['name'], 'stationId': station['stationId']})
     if is_station_exists is None:
         logger.warning('Station %s does not exists.', station['name'])
         if 'station_meta' in station:
