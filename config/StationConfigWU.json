@@ -6,12 +6,13 @@
             "station_meta": ["curw_orugodawatta", "Orugodawatta", 6.943741, 79.87887, 0, "SLLRDC Colombo North Office"],
             "source": "WeatherStation",
             "type": "Observed",
-            "variables": ["Precipitation", "Temperature"],
-            "units": ["mm", "oC"],
-            "max_values": ["120", "40"],
-            "min_values": ["0", "0"],
+            "variables": ["Precipitation", "Temperature", "WindSpeed", "WindGust", "WindDirection", "Humidity", "SolarRadiation"],
+            "units": ["mm", "oC", "m/s", "m/s", "degrees", "%", "W/m2"],
+            "max_values": ["120", "40", "30", "30", "360", "100", "1413"],
+            "min_values": ["0", "0", "0", "0", "0", "0", "0"],
             "description": "SLLRDC Colombo North Office",
-            "run_name": "CUrW IoT"
+            "run_name": "CUrW IoT",
+            "wunderground": {"stationId": "ICOLOMBO20", "password": "fur0gxzz"}
         }, {
             "stationId": "curw_jaffna",
             "name": "Jaffna",
