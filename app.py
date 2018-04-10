@@ -66,8 +66,6 @@ except Exception as e:
 
 def validate_bulk_request():
     content = request.get_json(silent=True)
-    logger_bulk.info("%s", json.dumps(content))
-    # logger_bulk.info("Headers:: %s", json.dumps(request.headers))
     if not isinstance(content, object) and not content and 'ID' in content:
         raise Exception("Invalid request. Abort ...")
     return content
@@ -103,6 +101,8 @@ def validate_bulk_date(time_step):
 def update_weather_station():
     try:
         content = validate_bulk_request()
+        logger_bulk.info("%s", json.dumps(content))
+        # logger_bulk.info("Headers:: %s", json.dumps(request.headers))
     except Exception as json_error:
         logger_bulk.error(json_error)
         return "Bad Request", 400
@@ -225,6 +225,8 @@ def update_weather_station():
 def update_waterlevel_guage():
     try:
         content = validate_bulk_request()
+        logger_bulk.info("%s", json.dumps(content))
+        # logger_bulk.info("Headers:: %s", json.dumps(request.headers))
     except Exception as json_error:
         logger_bulk.error(json_error)
         return "Bad Request", 400
