@@ -5,7 +5,9 @@ It is capable of upload data with multiple sampling.
 
 ### URL
 
-`<HOST_IP:PORT>`/weatherstation/updateweatherstation
+`<HOST_IP:PORT>`/weatherstation/updateweatherstation for weather stations
+`<HOST_IP:PORT>`/waterlevelgauge/updatewaterlevelgauge for water level gauge station
+
 
 ### Request Header
 
@@ -36,7 +38,9 @@ Content-Type: application/json
         "tempc": "",
         
         "winddir": "",
-        "windspeedmph": ""
+        "windspeedmph": "",
+        
+        "waterlevelm": ""
     }],
     "health": {
         "batt": ""
@@ -108,6 +112,10 @@ Eg. if the station is measuring temperature in Fahrenheit, then the value can be
 
 - **solarradiation** - [W/m^2]
 - **UV** - [index]
+
+<br>
+
+- **waterlevelm** - [the distance (in meters) between the water level gauge and the water surface]
 
 ### Response
 
@@ -315,6 +323,31 @@ Then the request data should be as below.
     },
     "action": "updateraw",
     "softwaretype": "iCon",
+    "version": "1.3.6"
+}
+```
+
+#### Example 5
+
+Water level gauge example request.
+
+**Request** 
+```json
+{
+    "ID": "curw_test",
+    "PASSWORD": "XXX",
+    "data": [{
+        "dateutc": "2018-01-01 10:10:00",
+        "waterlevelm": "0.211"
+    }, {
+        "dateutc": "2018-01-01 10:15:00",
+        "waterlevelm": "0.212"
+    }],
+    "health": {
+        "batt": "3.97"
+    },
+    "action": "updateraw",
+    "softwaretype": "LeeCom",
     "version": "1.3.6"
 }
 ```

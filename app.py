@@ -221,7 +221,7 @@ def update_weather_station():
 #####################################################################
 #                    BULK DATA  WaterLevelGauge                     #
 #####################################################################
-@app.route('/waterlevelguage/updatewaterlevelguage', methods=['POST'])
+@app.route('/waterlevelgauge/updatewaterlevelgauge', methods=['POST'])
 def update_waterlevel_guage():
     try:
         content = validate_bulk_request()
