@@ -17,7 +17,7 @@ Content-Type: application/json
 
 ### Request Method
 
-*POST*
+*POST for /weatherstation/updateweatherstation endpoint*
 
 ### Request Body
 
@@ -38,8 +38,31 @@ Content-Type: application/json
         "tempc": "",
         
         "winddir": "",
-        "windspeedmph": "",
-        
+        "windspeedmph": ""
+    }],
+    "health": {
+        "batt": ""
+    },
+    "action": "updateraw",
+    "softwaretype": "",
+    "version": "1.3.6"
+}
+```
+
+### Request Method
+
+*POST for /waterlevelgauge/updatewaterlevelgauge endpoint*
+
+### Request Body
+
+```json
+{
+    "ID": "",
+    "PASSWORD": "",
+    "data": [{
+        "dateutc": "YYYY-MM-DD HH:MM:SS",
+        "dateist": "YYYY-MM-DD HH:MM:SS",
+     
         "waterlevelm": ""
     }],
     "health": {
