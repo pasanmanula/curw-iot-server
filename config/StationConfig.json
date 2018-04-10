@@ -84,6 +84,18 @@
             "min_values": ["0", "0"],
             "description": "A&T Communication Box, Texas Standard Rain Gauge",
             "run_name": "A&T Labs"
+        }, {
+            "stationId": "curw_wl_test",
+            "name": "Leecom WL Guage",
+            "station_meta": ["curw_wl_test", "Leecom WL Guage", 6.890585 , 80.802551, 0, "Leecom water level guage, testing station"],
+            "source": "WaterLevelGuage",
+            "type": "Observed",
+            "variables": ["Waterlevel"],
+            "units": ["m"],
+            "max_values": ["30"],
+            "min_values": ["0"],
+            "description": "Leecom water level guage, testing station",
+            "run_name": "Leecom"
         }
     ]
 }

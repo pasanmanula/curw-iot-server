@@ -64,17 +64,45 @@ except Exception as e:
     logging.error(e)
 
 
+def validate_bulk_request():
+    content = request.get_json(silent=True)
+    logger_bulk.info("%s", json.dumps(content))
+    # logger_bulk.info("Headers:: %s", json.dumps(request.headers))
+    if not isinstance(content, object) and not content and 'ID' in content:
+        raise Exception("Invalid request. Abort ...")
+    return content
+
+
+def validate_bulk_date(time_step):
+    # Mapping Response to common format
+    new_time_step = copy.deepcopy(common_format)
+    is_utc_date_time = True
+
+    # -- DateUTC
+    if 'dateutc' in time_step:
+        new_time_step['DateUTC'] = Utils.get_date_time_object(time_step['dateutc'], as_str=True)
+        # -- Time
+        sl_time = Utils.get_date_time_object(time_step['dateutc']) + Constants.SL_OFFSET
+        new_time_step['Time'] = sl_time.strftime(Constants.DATE_TIME_FORMAT)
+    # -- DateIST
+    if 'dateist' in time_step:
+        is_utc_date_time = False
+        utc_time = Utils.get_date_time_object(time_step['dateist']) - Constants.SL_OFFSET
+        new_time_step['DateUTC'] = utc_time.strftime(Constants.DATE_TIME_FORMAT)
+        # -- Time
+        new_time_step['Time'] = Utils.get_date_time_object(time_step['dateist'], as_str=True)
+    if 'DateUTC' not in new_time_step:
+        raise Exception("Unable to find dateutc or dateist field")
+    return new_time_step, is_utc_date_time
+
+
 #####################################################################
-#                    BULK DATA                                      #
+#                    BULK DATA  WeatherStation                      #
 #####################################################################
 @app.route('/weatherstation/updateweatherstation', methods=['POST'])
 def update_weather_station():
     try:
-        content = request.get_json(silent=True)
-        logger_bulk.info("%s", json.dumps(content))
-        # logger_bulk.info("Headers:: %s", json.dumps(request.headers))
-        if not isinstance(content, object) and not content and 'ID' in content:
-            raise Exception("Invalid request. Abort ...")
+        content = validate_bulk_request()
     except Exception as json_error:
         logger_bulk.error(json_error)
         return "Bad Request", 400
@@ -89,25 +117,7 @@ def update_weather_station():
 
         for time_step in data:
             try:
-                # Mapping Response to common format
-                new_time_step = copy.deepcopy(common_format)
-                is_utc_date_time = True
-
-                # -- DateUTC
-                if 'dateutc' in time_step:
-                    new_time_step['DateUTC'] = Utils.get_date_time_object(time_step['dateutc'], as_str=True)
-                    # -- Time
-                    sl_time = Utils.get_date_time_object(time_step['dateutc']) + Constants.SL_OFFSET
-                    new_time_step['Time'] = sl_time.strftime(Constants.DATE_TIME_FORMAT)
-                # -- DateIST
-                if 'dateist' in time_step:
-                    is_utc_date_time = False
-                    utc_time = Utils.get_date_time_object(time_step['dateist']) - Constants.SL_OFFSET
-                    new_time_step['DateUTC'] = utc_time.strftime(Constants.DATE_TIME_FORMAT)
-                    # -- Time
-                    new_time_step['Time'] = Utils.get_date_time_object(time_step['dateist'], as_str=True)
-                if 'DateUTC' not in new_time_step:
-                    raise Exception("Unable to find dateutc or dateist field")
+                new_time_step, is_utc_date_time = validate_bulk_date(time_step)
             except Exception as dateutc_error:
                 logger_bulk.error('dateutc: %s', dateutc_error)
                 return "Bad Request: " + str(dateutc_error), 400
@@ -198,6 +208,49 @@ def update_weather_station():
             except Exception as error:
                 logger_bulk.error(error)
                 return "Bad Request: " + str(error), 400
+
+            timeseries.append(new_time_step)
+
+        save_timeseries(db_adapter, station, timeseries, logger_bulk)
+        return "success"
+    else:
+        logger_bulk.warning("Unknown Station: %s", content.get('ID'))
+        return "Failure", 404
+
+
+#####################################################################
+#                    BULK DATA  WaterLevelGauge                     #
+#####################################################################
+@app.route('/waterlevelguage/updatewaterlevelguage', methods=['POST'])
+def update_waterlevel_guage():
+    try:
+        content = validate_bulk_request()
+    except Exception as json_error:
+        logger_bulk.error(json_error)
+        return "Bad Request", 400
+
+    station = stations_map.get(content.get('ID'), None)
+    if station is not None:
+        data = content['data']
+        if len(data) < 1:
+            logger_bulk.error("Request does not have data")
+            return "Request does not have any data", 404
+        timeseries = []
+
+        for time_step in data:
+            try:
+                new_time_step, is_utc_date_time = validate_bulk_date(time_step)
+            except Exception as dateutc_error:
+                logger_bulk.error('dateutc: %s', dateutc_error)
+                return "Bad Request: " + str(dateutc_error), 400
+
+            try:
+                # -- WaterlevelM
+                if 'waterlevelm' in time_step:
+                    new_time_step['WaterlevelM'] = float(time_step['waterlevelm'])
+            except Exception as waterlevelm_error:
+                logger_bulk.error('waterlevelm : %s', waterlevelm_error)
+                return "Bad Request: Unable Validate waterlevelm field value", 400
 
             timeseries.append(new_time_step)
 

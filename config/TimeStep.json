@@ -11,5 +11,6 @@
   "WindSpeedGustKMH": "",
   "Humidity": "",
   "SolarRadiationW/m2": "",
+  "WaterlevelM": "",
   "DateUTC": ""
 }

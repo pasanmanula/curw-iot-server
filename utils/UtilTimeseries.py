@@ -80,6 +80,14 @@ def extract_single_variable_timeseries(timeseries, variable, opts=None):
                 new_timeseries.append([t['Time'], t['SolarRadiationW/m2']])
         return new_timeseries
 
+    def waterlevel(my_timeseries):
+        print('WaterLevel:: WaterlevelM')
+        new_timeseries = []
+        for t in my_timeseries:
+            if t['WaterlevelM'] is not None:
+                new_timeseries.append([t['Time'], t['WaterlevelM']])
+        return new_timeseries
+
     def default(my_timeseries):
         print('default', my_timeseries)
         return []
@@ -93,7 +101,8 @@ def extract_single_variable_timeseries(timeseries, variable, opts=None):
         'WindGust': wind_gust,
         'WindDirection': wind_direction,
         'Humidity': humidity,
-        'SolarRadiation': solar_radiation
+        'SolarRadiation': solar_radiation,
+        'Waterlevel': waterlevel
     }
     return variable_dict.get(variable, default)(timeseries)
     # --END extract_single_variable_timeseries --
