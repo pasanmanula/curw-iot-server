@@ -96,6 +96,18 @@
             "min_values": ["0"],
             "description": "Leecom water level guage, testing station",
             "run_name": "Leecom"
+        }, {
+            "stationId": "curw_mahapallegama2",
+            "name": "Mahapallegama2",
+            "station_meta": ["curw_mahapallegama2", "Mahapallegama2", 7.169737, 80.258512, 0, "Mahapallegama station with standard Gauge"],
+            "source": "WeatherStation",
+            "type": "Observed",
+            "variables": ["Precipitation", "Temperature", "Tick"],
+            "units": ["mm", "oC", "-"],
+            "max_values": ["120", "40", "1"],
+            "min_values": ["0", "0", "0"],
+            "description": "Mahapallegama",
+            "run_name": "A&T Labs"
         }
     ]
 }
